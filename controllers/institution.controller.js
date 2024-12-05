@@ -837,24 +837,28 @@ const editParentDocument = asyncHandler(async (req, res) => {
   }
 
   // Update the parentDocument fields
-  institution.courseFeeApplication.parentDocument.fatherAadharCard =
-    fatherAadharCard ||
-    institution.courseFeeApplication.parentDocument.fatherAadharCard;
-  institution.courseFeeApplication.parentDocument.fatherPanCard =
-    fatherPanCard ||
-    institution.courseFeeApplication.parentDocument.fatherPanCard;
-  institution.courseFeeApplication.parentDocument.motherAadharCard =
-    motherAadharCard ||
-    institution.courseFeeApplication.parentDocument.motherAadharCard;
-  institution.courseFeeApplication.parentDocument.motherPanCard =
-    motherPanCard ||
-    institution.courseFeeApplication.parentDocument.motherPanCard;
-  institution.courseFeeApplication.siblingsDocument.siblingAdharCard =
-    siblingAdharCard ||
-    institution.courseFeeApplication.siblingsDocument.siblingAdharCard;
-  institution.courseFeeApplication.siblingsDocument.siblingPanCard =
-    siblingPanCard ||
-    institution.courseFeeApplication.siblingsDocument.siblingPanCard;
+
+  if (siblingAdharCard && siblingPanCard) {
+    institution.courseFeeApplication.siblingsDocument.siblingAdharCard =
+      siblingAdharCard ||
+      institution.courseFeeApplication.siblingsDocument.siblingAdharCard;
+    institution.courseFeeApplication.siblingsDocument.siblingPanCard =
+      siblingPanCard ||
+      institution.courseFeeApplication.siblingsDocument.siblingPanCard;
+  } else {
+    institution.courseFeeApplication.parentDocument.fatherAadharCard =
+      fatherAadharCard ||
+      institution.courseFeeApplication.parentDocument.fatherAadharCard;
+    institution.courseFeeApplication.parentDocument.fatherPanCard =
+      fatherPanCard ||
+      institution.courseFeeApplication.parentDocument.fatherPanCard;
+    institution.courseFeeApplication.parentDocument.motherAadharCard =
+      motherAadharCard ||
+      institution.courseFeeApplication.parentDocument.motherAadharCard;
+    institution.courseFeeApplication.parentDocument.motherPanCard =
+      motherPanCard ||
+      institution.courseFeeApplication.parentDocument.motherPanCard;
+  }
 
   // Save the updated document to the database
   const data = await institution.save();

@@ -1916,7 +1916,7 @@ const updatePageStatus = asyncHandler(async (req, res) => {
 const getCompanyData = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const company = await Company.findById(id);
+  const company = await Company.findOne({agentId : id});
   if (!company) {
     return res
       .status(404)
@@ -2597,7 +2597,7 @@ const getApplicationMonthlyCount = asyncHandler(async (req, res) => {
     date,
     applicationType
   } = req.query;
-  const matchFilter = {deleted: false}; 
+  const matchFilter = {}; 
   if(date) {
     const startOfYear = new Date(`${date}-01-01`);
     const endOfYear = new Date(`${date}-12-31`);
@@ -2605,7 +2605,7 @@ const getApplicationMonthlyCount = asyncHandler(async (req, res) => {
   }
   if(applicationType){
     // matchFilter[`${applicationType}.type`] = applicationType;
-    matchFilter[`${applicationType}.status`] = { $exists : true};
+    matchFilter[`${applicationType}.status`] = { $exists : true };
   }
   const applicationMonthlyCounts = await Institution.aggregate([
     {$match : matchFilter},
@@ -2639,16 +2639,7 @@ const downloadAllStudentsAsCSV = asyncHandler(async (req, res) => {
   try {
     // Fetch all students from the database
     const students = await StudentInformation.find(
-      {deleted : false}, // No filter
-      {
-        _id: 1,
-        "personalInformation.firstName": 1,
-        "personalInformation.lastName": 1,
-        "personalInformation.email": 1,
-        "personalInformation.phone.phone": 1,
-        stId: 1,
-      }
-    ).lean();
+      {deleted : false}).lean();
 
     // Prepare data for CSV
     const csvData = students.map((student) => ({
@@ -2658,10 +2649,32 @@ const downloadAllStudentsAsCSV = asyncHandler(async (req, res) => {
       Email: student.personalInformation?.email || "",
       Phone: student.personalInformation?.phone?.phone || "",
       "Student ID": student.stId || "",
+      "Preferred Country": student.preferences?.preferredCountry || "",
+      "Preferred State": student.preferences?.preferredState || "",
+      "Preferred Program": student.preferences?.preferredProgram || "",
+      "Preferred Level of Education": student.preferences?.preferredLevelOfEducation || "",
+      "Preferred Institution": student.preferences?.preferredInstitution || "",
+      "Residence Address": student.residenceAddress?.address || "",
+      "Residence Country": student.residenceAddress?.country || "",
+      "Residence State": student.residenceAddress?.state || "",
+      "Residence City": student.residenceAddress?.city || "",
+      "Residence Zipcode": student.residenceAddress?.zipcode || "",
+      "Mailing Address": student.mailingAddress?.address || "",
+      "Mailing Country": student.mailingAddress?.country || "",
+      "Mailing State": student.mailingAddress?.state || "",
+      "Mailing City": student.mailingAddress?.city || "",
+      "Mailing Zipcode": student.mailingAddress?.zipcode || "",
+      "Passport Upload": student.passportDetails?.passportUpload || "",
+      "Country of Citizenship": student.passportDetails?.countryOfCitizenship || "",
+      "Passport Number": student.passportDetails?.passportNumber || "",
+      "Passport Expiry Date": student.passportDetails?.expireDate || "",
+      "Page Status": student.pageStatus?.status || "",
+      "Status Message": student.pageStatus?.message || "",
+      "Deleted": student.deleted ? "Yes" : "No",
     }));
 
     const csvDataString = json2csv(csvData, {
-      fields: ["ID", "First Name", "Last Name", "Email", "Phone", "Student ID"],
+      fields: Object.keys(csvData[0]), // Dynamically use keys for column headers
     });
 
     const folderPath = path.join(__dirname, "..", "csv");
@@ -2692,25 +2705,166 @@ const downloadAllAgentsAsCSV = asyncHandler(async (req, res) => {
   try {
     // Fetch all agents from the database
     const agents = await Agent.find({deleted: false})
-      .select("accountDetails.primaryContactPerson.name accountDetails.primaryContactPerson.email")
       .lean();
 
-    // Populate `agId` for each agent by looking up in the `Company` collection
-    const agentData = await Promise.all(
-      agents.map(async (agent) => {
-        const company = await Company.findOne({ agentId: agent._id }).select("agId").lean();
-        return {
-          Name: agent.accountDetails.primaryContactPerson.name || "",
-          Email: agent.accountDetails.primaryContactPerson.email || "",
-          "Agent ID": company?.agId || "N/A",
-        };
+      const companyData = await Company.find({
+        agentId: { $in: agents.map((agent) => agent._id) },
       })
-    );
+        .lean();
+
+        const companyLookup = companyData.reduce((acc, company) => {
+          acc[company.agentId] = company;
+          return acc;
+        }, {});
+
+    // Populate `agId` for each agent by looking up in the `Company` collection
+    const agentData = agents.map((agent) => {
+      const company = companyLookup[agent._id];
+    
+      // Extract all nested schema data
+      const companyDetails = company?.companyDetails || {};
+      const primaryContact = company?.primaryContact || {};
+      const commissionContact = company?.commissionContact || {};
+      const admissionsContacts = company?.admissionsContacts || [];
+      const bankDetails = company?.bankDetails || {};
+      const companyOverview = company?.companyOverview || {};
+      const companyOperations = company?.companyOperations || {};
+      const references = company?.references || [];
+    
+      return {
+        "Agent Name": agent.accountDetails?.primaryContactPerson?.name || "",
+        "Agent Email": agent.accountDetails?.primaryContactPerson?.email || "",
+        "Agent ID": company?.agId || "N/A",
+        "Team ID": company?.teamId || "N/A",
+        "Business Name": companyDetails.businessName || "N/A",
+        "Business Address": companyDetails.address || "N/A",
+        "Business Country": companyDetails.country || "N/A",
+        "Business Province/State": companyDetails.provinceState || "N/A",
+        "Business City": companyDetails.city || "N/A",
+        "Business Postal Code": companyDetails.postalCode || "N/A",
+        "Business Phone Number": companyDetails.phoneNumber || "N/A",
+        "Business Website": companyDetails.website || "N/A",
+        "Business LinkedIn": companyDetails.linkedin || "N/A",
+        "Business WhatsApp Number": companyDetails.whatsappNumber || "N/A",
+        "Primary Contact Name": `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim(),
+        "Primary Contact Position": primaryContact.positionJobTitle || "N/A",
+        "Primary Contact Email": primaryContact.emailUsername || "N/A",
+        "Primary Contact Country": primaryContact.country || "N/A",
+        "Primary Contact Phone Number": primaryContact.phoneNumber || "N/A",
+        "Commission Contact Name": commissionContact.fullName || "N/A",
+        "Commission Contact Position": commissionContact.positionJobTitle || "N/A",
+        "Commission Contact Email": commissionContact.email || "N/A",
+        "Commission Contact Phone": commissionContact.phoneNumber || "N/A",
+        "Admissions Contacts": admissionsContacts
+          .map((contact) => `${contact.fullName} (${contact.destinationCountry})`)
+          .join("; "),
+        "Bank Name": bankDetails.bankName || "N/A",
+        "Bank Branch Name": bankDetails.branchName || "N/A",
+        "Bank Country": bankDetails.country || "N/A",
+        "Bank Province/State": bankDetails.provinceState || "N/A",
+        "Bank Address": bankDetails.address || "N/A",
+        "Bank City": bankDetails.city || "N/A",
+        "Bank Postal Code": bankDetails.postalCode || "N/A",
+        "Bank SWIFT/BIC Code": bankDetails.swiftBicCode || "N/A",
+        "Bank Sort Code": bankDetails.sortCode || "N/A",
+        "Bank Account Name": bankDetails.bankAccountName || "N/A",
+        "Bank Account Number": bankDetails.bankAccountNumber || "N/A",
+        "Bank IBAN": bankDetails.iban || "N/A",
+        "Operation Start Year": companyOverview.businessOperationStartYear || "N/A",
+        "Number of Students": companyOverview.numberOfStudents || "N/A",
+        "Popular Destinations": companyOverview.popularDestinations?.join(", ") || "N/A",
+        "Student Source Country": companyOverview.studentSourceCountry || "N/A",
+        "Government Licensed": companyOverview.governmentLicensed || "N/A",
+        "Business Registration Number": companyOverview.businessRegistrationNumber || "N/A",
+        "Business Registration Type": companyOverview.businessRegistrationType || "N/A",
+        "Business Registration Document": companyOverview.businessRegistrationDocument || "N/A",
+        "Company PAN": companyOverview.companyPan || "N/A",
+        "Company GST": companyOverview.companyGST || "N/A",
+        "Higher Education Programmes": companyOverview.higherEducationProgrammes?.join(", ") || "N/A",
+        "Finance Sources": companyOverview.financeSources?.join(", ") || "N/A",
+        "Study Destinations": companyOverview.studyDestinations?.join(", ") || "N/A",
+        "Business Profile Document": companyOverview.businessProfileDocument || "N/A",
+        "Number of Counselors": companyOperations.numberOfCounselors || "N/A",
+        "Average Experience Years": companyOperations.averageExperienceYears || "N/A",
+        "Advertisement Methods": companyOperations.advertisementMethods?.join(", ") || "N/A",
+        "Social Media Platforms": companyOperations.socialMediaPlatforms?.join(", ") || "N/A",
+        "Reference ReferenceType": references[0].referenceType || "N/A",
+        "Reference ContactPerson" : references[0].contactPerson || "N/A",
+        "Reference InstitutionName" : references[0].institutionName || "N/A",
+        "Reference Designation" : references[0].designation || "N/A",
+        "Reference Country" : references[0].country || "N/A",
+        "Reference ContactNumber" : references[0].contactNumber || "N/A",
+        "Reference Email" : references[0].email || "N/A",
+        "Deleted": company?.deleted ? "Yes" : "No",
+      };
+    });
+    
 
     // Prepare the CSV data
-    const csvDataString = json2csv(agentData, {
-      fields: ["Name", "Email", "Agent ID"],
-    });
+    const csvDataString = json2csv(agentData, {fields : [
+      "Agent Name",
+      "Agent Email",
+      "Agent ID",
+      "Team ID",
+      "Business Name",
+      "Business Address",
+      "Business Country",
+      "Business Province/State",
+      "Business City",
+      "Business Postal Code",
+      "Business Phone Number",
+      "Business Website",
+      "Business LinkedIn",
+      "Business WhatsApp Number",
+      "Primary Contact Name",
+      "Primary Contact Position",
+      "Primary Contact Email",
+      "Primary Contact Country",
+      "Primary Contact Phone Number",
+      "Commission Contact Name",
+      "Commission Contact Position",
+      "Commission Contact Email",
+      "Commission Contact Phone",
+      "Admissions Contacts",
+      "Bank Name",
+      "Bank Branch Name",
+      "Bank Country",
+      "Bank Province/State",
+      "Bank Address",
+      "Bank City",
+      "Bank Postal Code",
+      "Bank SWIFT/BIC Code",
+      "Bank Sort Code",
+      "Bank Account Name",
+      "Bank Account Number",
+      "Bank IBAN",
+      "Operation Start Year",
+      "Number of Students",
+      "Popular Destinations",
+      "Student Source Country",
+      "Government Licensed",
+      "Business Registration Number",
+      "Business Registration Type",
+      "Business Registration Document",
+      "Company PAN",
+      "Company GST",
+      "Higher Education Programmes",
+      "Finance Sources",
+      "Study Destinations",
+      "Business Profile Document",
+      "Number of Counselors",
+      "Average Experience Years",
+      "Advertisement Methods",
+      "Social Media Platforms",
+      "Reference ReferenceType",
+      "Reference ContactPerson",
+      "Reference InstitutionName",
+      "Reference Designation",
+      "Reference Country",
+      "Reference ContactNumber",
+      "Reference Email",
+      "Deleted",
+    ]});
 
     const folderPath = path.join(__dirname, "..", "csv");
     const filePath = path.join(folderPath, "agents.csv");
@@ -2739,26 +2893,27 @@ const downloadAllAgentsAsCSV = asyncHandler(async (req, res) => {
 const downloadAllApplicationsAsCSV = asyncHandler(async (req, res) => {
   try {
     // Fetch all applications from the database
-    const applications = await Institution.find({deleted : false})
+    const applications = await Institution.find()
       .select("-__v") // Exclude the `__v` field
       .lean();
-
     // Transform applications and fetch related data
     const transformedApplications = await Promise.all(
       applications.map(async (app) => {
         const userId = app.userId;
         const userType = app.studentInformationId ? "student" : "agent";
 
+        // Initialize result object with common fields
         const result = {
           ApplicationID: app.applicationId || "N/A",
-          InstitutionID: app._id || "N/A",
-          UserID: userId || "N/A",
+          // InstitutionID: app._id || "N/A",
+          // UserID: userId || "N/A",
           UserType: userType,
           FullName: "N/A",
           AgentName: "N/A",
-          Status: "N/A",
-          Message: "N/A",
-          Type: "N/A", // Whether it's 'offerLetter' or 'gic'
+          // Status: "N/A",
+          // Message: "N/A",
+          Type: "N/A", // Whether it's 'offerLetter' or 'courseFeeApplication'
+          CustomUserID: "N/A",
         };
 
         // Fetch related user data
@@ -2781,17 +2936,119 @@ const downloadAllApplicationsAsCSV = asyncHandler(async (req, res) => {
           }
         }
 
-        // Extract status and message from `offerLetter` or `gic`
+        // Add fields depending on the type of application (offerLetter or courseFeeApplication)
         if (app.offerLetter?.personalInformation) {
-          result.FullName = app.offerLetter.personalInformation.fullName || "N/A";
+          // OfferLetter fields
           result.Type = "offerLetter";
-          result.Status = app.offerLetter.status || "N/A";
-          result.Message = app.offerLetter.message || "N/A";
-        } else if (app.gic?.personalDetails) {
-          result.FullName = app.gic.personalDetails.fullName || "N/A";
-          result.Type = "gic";
-          result.Status = app.gic.status || "N/A";
-          result.Message = app.gic.message || "N/A";
+          result.FullName =
+            app.offerLetter.personalInformation?.fullName || "N/A";
+          // result.Status = app.offerLetter.status || "N/A";
+          // result.Message = app.offerLetter.message || "N/A";
+          result.offerLetterStatus = app.offerLetter.status || "N/A";
+          result.offerLetterMessage = app.offerLetter.message || "N/A";
+          // result.offerLetterType = app.offerLetter.type || "N/A";
+          result.educationLevel =
+            app.offerLetter.educationDetails?.educationLevel || "N/A";
+          result.markSheet10 =
+            app.offerLetter.educationDetails?.markSheet10 || "N/A";
+          result.markSheet12 =
+            app.offerLetter.educationDetails?.markSheet12 || "N/A";
+          result.markSheetUnderGraduate =
+            app.offerLetter.educationDetails?.markSheetUnderGraduate || "N/A";
+          result.markSheetPostGraduate =
+            app.offerLetter.educationDetails?.markSheetPostGraduate || "N/A";
+          result.country = app.offerLetter.preferences?.country || "N/A";
+          result.institution =
+            app.offerLetter.preferences?.institution || "N/A";
+          result.course = app.offerLetter.preferences?.course || "N/A";
+          result.intake = app.offerLetter.preferences?.intake || "N/A";
+          result.offerLetterPrice =
+            app.offerLetter.preferences?.offerLetterPrice || "N/A";
+          result.ieltsOverallBand =
+            app.offerLetter.ieltsScore?.overallBand || "N/A";
+          result.ieltsReading = app.offerLetter.ieltsScore?.reading || "N/A";
+          result.ieltsSpeaking = app.offerLetter.ieltsScore?.speaking || "N/A";
+          result.ieltsWriting = app.offerLetter.ieltsScore?.writing || "N/A";
+          result.ieltsListening =
+            app.offerLetter.ieltsScore?.listening || "N/A";
+          result.ptesOverallBand = app.offerLetter.ptes?.overallBand || "N/A";
+          result.ptesReading = app.offerLetter.ptes?.reading || "N/A";
+          result.ptesSpeaking = app.offerLetter.ptes?.speaking || "N/A";
+          result.ptesWriting = app.offerLetter.ptes?.writing || "N/A";
+          result.ptesListening = app.offerLetter.ptes?.listening || "N/A";
+          result.toeflOverallBand = app.offerLetter.toefl?.overallBand || "N/A";
+          result.toeflReading = app.offerLetter.toefl?.reading || "N/A";
+          result.toeflSpeaking = app.offerLetter.toefl?.speaking || "N/A";
+          result.toeflWriting = app.offerLetter.toefl?.writing || "N/A";
+          result.toeflListening = app.offerLetter.toefl?.listening || "N/A";
+          result.certificateUrls =
+            app.offerLetter.certificate?.url.join(", ") || "N/A";
+        }
+
+        if (app.courseFeeApplication?.personalDetails) {
+          // Course Fee Application fields
+          result.Type = "courseFeeApplication";
+          result.FullName = app.courseFeeApplication.personalDetails?.fullName || "N/A";
+          // result.courseFeeInstitution =
+          //   app.courseFeeApplication.preferences?.institution || "N/A";
+          // result.courseFeeCountry =
+          //   app.courseFeeApplication.personalDetails?.address?.country || "N/A";
+          // result.courseFeeIntake =
+          //   app.courseFeeApplication.preferences?.intake || "N/A";
+          // result.courseFeeCourse =
+          //   app.courseFeeApplication.preferences?.course || "N/A";
+          // result.courseFeeAmount =
+          //   app.courseFeeApplication.preferences?.amount || "N/A";
+        
+          // Add new fields from schemas
+          // Student Documents
+          result.studentAadharCard =
+            app.courseFeeApplication.studentDocument?.aadharCard || "N/A";
+          result.studentPanCard =
+            app.courseFeeApplication.studentDocument?.panCard || "N/A";
+        
+          // Parent Documents
+          result.fatherAadharCard =
+            app.courseFeeApplication.parentDocument?.fatherAadharCard || "N/A";
+          result.fatherPanCard =
+            app.courseFeeApplication.parentDocument?.fatherPanCard || "N/A";
+          result.motherAadharCard =
+            app.courseFeeApplication.parentDocument?.motherAadharCard || "N/A";
+          result.motherPanCard =
+            app.courseFeeApplication.parentDocument?.motherPanCard || "N/A";
+        
+          // Sibling Documents
+          result.siblingAadharCard =
+            app.courseFeeApplication.siblingsDocument?.siblingAdharCard || "N/A";
+          result.siblingPanCard =
+            app.courseFeeApplication.siblingsDocument?.siblingPanCard || "N/A";
+        
+          // Offer Letter and Passport
+          result.offerLetter =
+            app.courseFeeApplication.offerLetterAnsPassport?.offerLetter || "N/A";
+          result.passport =
+            app.courseFeeApplication.offerLetterAnsPassport?.passport || "N/A";
+        }
+        
+
+        if (app.visa?.personalDetails) {
+          // Visa fields
+          result.Type = "visa";
+          // result.visaStatus = app.visa.status || "N/A";
+          // result.visaMessage = app.visa.message || "N/A";
+          // result.visaType = app.visa.type || "N/A";
+          result.FullName = app.visa.personalDetails?.fullName || "N/A";
+          result.visaCountry = app.visa.country || "N/A";
+          result.visaLoa = app.visa.loa || "N/A";
+          result.visaOfferLetter = app.visa.offerLetter || "N/A";
+          result.visaGicLetter = app.visa.gicLetter || "N/A";
+          result.visaMedical = app.visa.medical || "N/A";
+          result.visaPcc = app.visa.pcc || "N/A";
+          result.visaPal = app.visa.pal || "N/A";
+          result.visaCertificateUrls =
+            app.visa.certificate?.join(", ") || "N/A";
+          result.visaStamp = app.visa.visaStamp || "N/A";
+          result.visaPpr = app.visa.ppr || "N/A";
         }
 
         return result;
@@ -2802,15 +3059,62 @@ const downloadAllApplicationsAsCSV = asyncHandler(async (req, res) => {
     const csvDataString = json2csv(transformedApplications, {
       fields: [
         "ApplicationID",
-        "InstitutionID",
-        "UserID",
+        // "InstitutionID",
+        // "UserID",
         "UserType",
         "CustomUserID",
         "FullName",
         "AgentName",
         "Type",
-        "Status",
-        "Message",
+        // "offerLetterStatus",
+        // "offerLetterMessage",
+        // "offerLetterType",
+        "educationLevel",
+        "markSheet10",
+        "markSheet12",
+        "markSheetUnderGraduate",
+        "markSheetPostGraduate",
+        "country",
+        "institution",
+        "course",
+        "intake",
+        "offerLetterPrice",
+        "ieltsOverallBand",
+        "ieltsReading",
+        "ieltsSpeaking",
+        "ieltsWriting",
+        "ieltsListening",
+        "ptesOverallBand",
+        "ptesReading",
+        "ptesSpeaking",
+        "ptesWriting",
+        "ptesListening",
+        "toeflOverallBand",
+        "toeflReading",
+        "toeflSpeaking",
+        "toeflWriting",
+        "toeflListening",
+        "certificateUrls",
+        "studentAadharCard",
+        "studentPanCard",
+        "fatherAadharCard",
+        "fatherPanCard",
+        "motherAadharCard",
+        "motherPanCard",
+        "siblingAadharCard",
+        "siblingPanCard",
+        "offerLetter",
+        "passport",
+        "visaCountry",
+        "visaLoa",
+        "visaOfferLetter",
+        "visaGicLetter",
+        "visaMedical",
+        "visaPcc",
+        "visaPal",
+        "visaCertificateUrls",
+        "visaStamp",
+        "visaPpr",
       ],
     });
 

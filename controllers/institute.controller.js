@@ -4,6 +4,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import path from "path";
 import fs from "fs";
 import { parse as json2csv } from "json2csv";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 const getAllInstitute = asyncHandler(async (req, res) => {
@@ -128,7 +131,13 @@ const editInstitute = asyncHandler(async (req, res) => {
   
       // Prepare CSV data
       const csvDataString = json2csv(institutes, {
-        fields: ["_id", "instituteName", "country", "createdAt", "updatedAt"],
+        fields: ["instituteName",
+          "country",
+          "offerLetterPrice",
+          "aboutCollegeOrInstitute",
+          "keyHighlights",
+          "popularCourses",
+          "admissionAndFacilities"],
       });
   
       const folderPath = path.join(__dirname, "..", "csv");

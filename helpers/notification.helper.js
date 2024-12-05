@@ -55,12 +55,17 @@ export const getNotificationsForAdmin = async ( page = 1, limit = 10 ) => {
     });
     const totalPages = Math.ceil(totalNotifications / limit);
 
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
     if (!notifications) {
       console.error("notifications for admin not found!");
       return;
     }
 
-    return { notifications, currentPage: page, totalPages, totalNotifications };
+    return { notifications, currentPage: page, totalPages, totalNotifications, nextPage, prevPage, hasNextPage, hasPrevPage, };
   } catch (error) {
     console.error("Error marking notification as read:", error);
   }
@@ -79,12 +84,17 @@ export const getNotificationsForUser = async (id, page = 1, limit = 10) => {
     });
     const totalPages = Math.ceil(totalNotifications / limit);
 
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
     if (!notifications) {
       console.error("notifications for users not found!");
       return;
     }
 
-    return { notifications, currentPage: page, totalPages, totalNotifications };
+    return { notifications, currentPage: page, totalPages, totalNotifications, nextPage, prevPage, hasNextPage, hasPrevPage, };
   } catch (error) {
     console.error("Error marking notification as read:", error);
   }

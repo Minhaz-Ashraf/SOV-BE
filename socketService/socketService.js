@@ -106,7 +106,7 @@ class SocketService {
         .to("GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS")
         .emit("GLOBAL_NOTIFICATION_ADMIN_ALERT", createdNotification);
         emitOnMessage(socket, "NOTIFICATION_AGENT_TO_ADMIN", createdNotification);
-        // console.log("Notification data from agent to admin:", notificationData);
+        // console.log("Notification data from agent to admin:", createdNotification);
       });
 
       // Admin to Student
@@ -132,7 +132,7 @@ class SocketService {
         .to(`USER_${recieverId}`)
         .emit("GLOBAL_NOTIFICATION_STUDENT_ALERT", createdNotification);
         emitOnMessage(socket, "NOTIFICATION_ADMIN_TO_STUDENT", createdNotification);
-        // console.log("Notification data from admin to student:", notificationData);
+        // console.log("Notification data from admin to student:", createdNotification);
       });
 
       // Admin to Agent
@@ -158,10 +158,10 @@ class SocketService {
         .to(`USER_${recieverId}`)
         .emit("GLOBAL_NOTIFICATION_AGENT_ALERT", createdNotification);
         emitOnMessage(socket, "NOTIFICATION_ADMIN_TO_AGENT", createdNotification);
-        // console.log("Notification data from admin to agent:", notificationData);
+        // console.log("Notification data from admin to agent:", createdNotification);
       });
 
-      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async (page, limit) => {
+      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async ({page, limit}) => {
         
         const notifications = await getNotificationsForAdmin(page, limit);
 
@@ -172,7 +172,7 @@ class SocketService {
         // console.log("Notification data from admin to agent:", notifications);
       });
 
-      socket.on("GET_NOTIFICATIONS_FOR_USER", async (page, limit) => {
+      socket.on("GET_NOTIFICATIONS_FOR_USER", async ({page, limit}) => {
 
         const notifications = await getNotificationsForUser(decryptedDetails._id, page, limit);
         

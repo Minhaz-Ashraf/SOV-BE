@@ -329,7 +329,7 @@ export const getTotalUsersCountForAgent = asyncHandler(async (req, res) => {
     const endOfYear = new Date(`${date}-12-31`);
     matchFilter.createdAt = { $gte: startOfYear, $lte: endOfYear };
   }
-  const studentMonthlyCounts = await Student.aggregate([
+  const studentMonthlyCounts = await StudentInformation.aggregate([
     { $match: matchFilter },
     {
       $group: {
@@ -365,7 +365,7 @@ export const getApplicationMonthlyCountForAgent = asyncHandler(async (req, res) 
     return res.status(403).json(new ApiResponse(403, {}, "You are not authorized to view this information"));
   }
   const { date, applicationType } = req.query;
-  const matchFilter = {userId: req.user.id, deleted: false};
+  const matchFilter = {userId: req.user.id};
   if (date) {
     const startOfYear = new Date(`${date}-01-01`);
     const endOfYear = new Date(`${date}-12-31`);
