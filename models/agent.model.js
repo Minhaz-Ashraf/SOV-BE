@@ -60,7 +60,6 @@ const agentSchema = new Schema(
         },
         phone: {
           type: String,
-          required: [true, "Primary Contact Person Phone is required"],
         },
       },
       referralSource: {
