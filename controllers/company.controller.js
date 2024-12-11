@@ -360,11 +360,13 @@ const registerReferences = asyncHandler(async (req, res) => {
       agentEmail.accountDetails.primaryContactPerson.name,
       company.agId
     );
-    // await sendEmail({
-    //   to: adminEmails,
-    //   subject: `Offer Letter Approved for Proceed with Next Steps`,
-    //   htmlContent: tempemail,
-    // });
+    adminEmails?.map(async (adminEmail) =>{
+      await sendEmail({
+        to: adminEmail,
+        subject: `New Registration Completed – Awaiting Admin Approval`,
+        htmlContent: tempemail,
+      });
+    })
   }
 
   // Save the updated company details

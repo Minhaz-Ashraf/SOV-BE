@@ -202,7 +202,7 @@ class SocketService {
 
       socket.on("NOTIFICATION_SEEN_BY_ADMIN", async () => {
         // update seen status
-        const notification = await markAllNotificationsAsSeen(undefined);
+        const notification = await markAllNotificationsAsSeen(undefined, "seen");
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
         .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
@@ -211,7 +211,24 @@ class SocketService {
 
       socket.on("NOTIFICATION_SEEN_BY_USER", async () => {
         // update seen status
-        const notification = await markAllNotificationsAsSeen(decryptedDetails._id);
+        const notification = await markAllNotificationsAsSeen(decryptedDetails._id, "seen");
+        // this.socketServer
+        // .to(`USER_${decryptedDetails._id}`)
+        // .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
+        console.log("Notification data from admin to agent:", notification);
+      });
+      socket.on("NOTIFICATION_ALL_READ_BY_ADMIN", async () => {
+        // update seen status
+        const notification = await markAllNotificationsAsSeen(undefined, "read");
+        this.socketServer
+        .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
+        .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
+        // console.log("Notification data from admin to agent:", notification);
+      });
+
+      socket.on("NOTIFICATION_ALL_READ_BY_USER", async () => {
+        // update seen status
+        const notification = await markAllNotificationsAsSeen(decryptedDetails._id, "read");
         // this.socketServer
         // .to(`USER_${decryptedDetails._id}`)
         // .emit("NOTIFICATION_SEEN_STATUS_UPDATE");

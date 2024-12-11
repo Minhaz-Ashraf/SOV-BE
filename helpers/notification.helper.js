@@ -1,6 +1,6 @@
 import { Notifications } from "../models/notification.model.js";
 
-export const markAllNotificationsAsSeen = async (recieverId) => {
+export const markAllNotificationsAsSeen = async (recieverId, type) => {
   try {
     let query;
 
@@ -12,7 +12,15 @@ export const markAllNotificationsAsSeen = async (recieverId) => {
       query = { "recipient.userId": { $exists: false } };
     }
 
-    const result = await Notifications.updateMany(query, { status: "seen" });
+    let change = {}
+
+    if(type === "seen"){
+      change = { status: "seen" };
+    }else {
+      change = { isRead: true, status: "seen" };
+    }
+
+    const result = await Notifications.updateMany(query, change);
 
     console.log(`${result.modifiedCount} notifications marked as seen.`);
   } catch (error) {

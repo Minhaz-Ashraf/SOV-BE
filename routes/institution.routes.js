@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 import { applicationOverview, createInstitutionVisa, editCertificate, editEducationDetails, editIELTSScore, editOfferLetterAnsPassport, editParentDocument, editPersonalInformation, editPreferences, editPTEScore, editStudentDocument, editTOEFLScore, getAllApplications, getApplicationById, getStudentAllApplications, getStudentApplicationInfo, getVisaDocuments, registerCourseFeeApplication, registerGIC, registerOfferLetter, reSubmitApplication, updateVisaDocuments, updateVisaPersonalDetails, updateVisaStatus } from "../controllers/institution.controller.js";
-import { getVisaDetails, updateVisaDetails } from "../controllers/adminDashboard.controller.js";
+import { changeApplicationStatus, getVisaDetails, updateVisaDetails } from "../controllers/adminDashboard.controller.js";
 const router = Router();
 
 router.route("/register-offerletter").post( verifyJwt, registerOfferLetter);
@@ -30,6 +30,7 @@ router.route("/get-visa-documents/:studentId").get(getVisaDocuments);
 router.route("/get-visa-details/:applicationId").get( getVisaDetails);  //ppr get
 router.route("/update-visa-document/:applicationId").post( updateVisaDetails);
 router.route("/visa-status-by-agent/:id").patch(verifyJwt, updateVisaStatus);  
+router.route("/change-application-status/:institutionId").patch(verifyJwt, changeApplicationStatus);
 
 
 

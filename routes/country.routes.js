@@ -5,6 +5,6 @@ const router = Router();
 
 router.route("/all").get( getAllCountries);
 router.route("/preferred").get( getPreferredCountries);
-router.route("/courses").get( verifyJwt, getAllCourses);
+router.route("/courses").get(getAllCourses);
 
 export default router;

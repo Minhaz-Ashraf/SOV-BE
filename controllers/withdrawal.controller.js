@@ -63,11 +63,13 @@ const adminEmails = process.env.ADMIN_EMAIL?.split(',');
     const studentId = studentInfo.stId;
 
     const emailContent = withdrawalRequestAdmin( studentName, studentId, withdrawalDetails.appliedFor );
-    await sendEmail({
-      to: adminEmails,
-      subject: "Withdrawal Request - Action Required",
-      htmlContent: emailContent,
-    });
+    adminEmails?.map(async (adminEmail) =>{
+      await sendEmail({
+        to: adminEmail,
+        subject: `Withdrawal Request - Action Required`,
+        htmlContent: emailContent,
+      });
+    })
   
     if (existingWithdrawal) {
       // Update the existing withdrawal record

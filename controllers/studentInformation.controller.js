@@ -351,11 +351,13 @@ const studentPreference = asyncHandler(async (req, res) => {
         studentInfo.personalInformation.firstName,
         stId
       );
-      // await sendEmail({
-      //   to: adminEmails,
-      //   subject: `New Registration Completed – Awaiting Admin Approvals`,
-      //   htmlContent: tempemail,
-      // });
+      adminEmails?.map(async (adminEmail) =>{
+        await sendEmail({
+          to: adminEmail,
+          subject: `New Registration Completed – Awaiting Admin Approval`,
+          htmlContent: tempemail,
+        });
+      })
     } else if (req.user.role === "2") {
       const agent = await Agent.findById(req.user.id);
       if (agent) {
@@ -506,12 +508,7 @@ const updateStudentPersonalInformation = asyncHandler(async (req, res) => {
 const getAllAgentStudent = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, searchData } = req.query;
 
-  let agentId
-  if(req.user.role === "0" || req.user.role === "1"){
-    agentId = undefined;
-  }else{
-    agentId = req.user.id;
-  }
+  let agentId = req.user.id;
 
   // Check if the user role is authorized
   if (req.user.role !== "2" && req.user.role !== "0" && req.user.role !== "1") {
@@ -609,12 +606,7 @@ const getAllAgentStudent = asyncHandler(async (req, res) => {
 const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, searchData } = req.query;
 
-  let agentId
-  if(req.user.role === "0" || req.user.role === "1"){
-    agentId = undefined;
-  }else{
-    agentId = req.user.id;
-  }
+  let agentId = req.query.agentId || undefined;
 
   // Check if the user role is authorized
   if (req.user.role !== "2" && req.user.role !== "0" && req.user.role !== "1") {
@@ -738,32 +730,26 @@ const getStudentFormById = asyncHandler(async (req, res) => {
   const studentFormId =
     req.user.role === "2" || req.user.role === "0" ? formId : getFormId;
     
-  const applications = await Institution.find({
-    studentInformationId: studentFormId,
-    $or: [
-      { "visa.status": "approved" },
-      { "courseFeeApplication.status": "approved" },
-      { "offerLetter.status": "approved" },
-    ],
-  });
-
-  const flags = {
-    visaApproved: false,
-    courseFeeApproved: false,
-    offerLetterApproved: false,
-  };
-
-  applications.forEach((application) => {
-    if (application.visa?.status === "approved") {
-      flags.visaApproved = true;
-    }
-    if (application.gic?.status === "approved") {
-      flags.courseFeeApproved = true;
-    }
-    if (application.offerLetter?.status === "approved") {
-      flags.offerLetterApproved = true;
-    }
-  });
+    const visaApplication = await Institution.findOne({
+      studentInformationId: studentFormId,
+      "visa.status": { $exists: true },
+    }).sort({ updatedAt: -1 });
+    
+    const courseFeeApplication = await Institution.findOne({
+      studentInformationId: studentFormId,
+      "courseFeeApplication.status": { $exists: true },
+    }).sort({ updatedAt: -1 });
+    
+    const offerLetterApplication = await Institution.findOne({
+      studentInformationId: studentFormId,
+      "offerLetter.status": { $exists: true },
+    }).sort({ updatedAt: -1 });
+    
+    const flags = {
+      visaApproved: visaApplication?.visa?.status || "",
+      courseFeeApproved: courseFeeApplication?.courseFeeApplication?.status || "",
+      offerLetterApproved: offerLetterApplication?.offerLetter?.status || "",
+    };
 
 
   // Respond with success if student information is found
@@ -835,6 +821,10 @@ const deleteStudentData = asyncHandler(async (req, res) => {
         firstName = student.firstName;
         email = student.email;
       }
+    }
+    if (studentInfo.agentId) {
+      firstName = studentInfo.personalInformation.firstName;
+      email = studentInfo.personalInformation.email;
     }
 
     await Institution.updateMany(

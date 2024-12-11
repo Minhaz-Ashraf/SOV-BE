@@ -110,7 +110,7 @@ const registerOfferLetter = asyncHandler(async (req, res) => {
 
   // Retrieve the created offer letter, excluding unwanted fields in response
   const createdOffer = await Institution.findById(newOffer.id)
-    .select("-_v -visa -gic -courseFeeApplication")
+    .select("-_v -visa -courseFeeApplication -courseFeeApplication")
     .exec();
 
   // Return success response
@@ -125,7 +125,7 @@ const registerGIC = asyncHandler(async (req, res) => {
   const { body: payload, user } = req;
 
   // Validate the payload using Zod schema
-  const validation = GICSchema.safeParse(payload.gic);
+  const validation = GICSchema.safeParse(payload.courseFeeApplication);
   if (!validation.success) {
     return res
       .status(400)
@@ -134,7 +134,7 @@ const registerGIC = asyncHandler(async (req, res) => {
 
   // Find student information based on provided ID
   const studentInformation = await StudentInformation.findOne({
-    _id: payload.gic.studentInformationId,
+    _id: payload.courseFeeApplication.studentInformationId,
   });
   if (!studentInformation) {
     return res
@@ -156,8 +156,8 @@ const registerGIC = asyncHandler(async (req, res) => {
 
   // Create a new GIC document
   const newGIC = await Institution.create({
-    gic: {...payload.gic, status : "underreview"},
-    studentInformationId: payload.gic.studentInformationId,
+    courseFeeApplication: {...payload.courseFeeApplication, status : "underreview"},
+    studentInformationId: payload.courseFeeApplication.studentInformationId,
     applicationId,
     userId: req.user.id,
   });
@@ -200,7 +200,13 @@ const getAllApplications = asyncHandler(async (req, res) => {
         },
       },
       {
-        "gic.personalDetails.fullName": {
+        "courseFeeApplication.personalDetails.fullName": {
+          $regex: req.query.fullName,
+          $options: "i",
+        },
+      },
+      {
+        "visa.personalDetails.fullName": {
           $regex: req.query.fullName,
           $options: "i",
         },
@@ -211,7 +217,8 @@ const getAllApplications = asyncHandler(async (req, res) => {
     // Add condition for phoneNumber in offerLetter and gic using $or
     orConditions.push(
       { "offerLetter.personalInformation.phoneNumber": req.query.phoneNumber },
-      { "gic.personalDetails.phoneNumber": req.query.phoneNumber }
+      { "courseFeeApplication.personalDetails.phoneNumber": req.query.phoneNumber },
+      { "visa.personalDetails.phoneNumber": req.query.phoneNumber }
     );
   }
   if (req.query.institution) {
@@ -242,7 +249,8 @@ const getAllApplications = asyncHandler(async (req, res) => {
     if (validStatuses.includes(req.query.status)) {
       query.$or = [
         { "offerLetter.status": req.query.status },
-        { "gic.status": req.query.status },
+        { "courseFeeApplication.status": req.query.status },
+        { "visa.status": req.query.status },
       ];
     } else {
       return res
@@ -264,7 +272,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
         break;
       case "visa":
         // Filter for Visa applications (assuming this means GIC status or similar)
-        query["gic"] = { $exists: true };
+        query["visa"] = { $exists: true };
         break;
       case "all":
         // No additional filters, show all
@@ -305,8 +313,8 @@ const getAllApplications = asyncHandler(async (req, res) => {
     if (app.offerLetter && Object.keys(app.offerLetter).length > 0) {
       transformedApp.offerLetter = app.offerLetter;
     }
-    if (app.gic && Object.keys(app.gic).length > 0) {
-      transformedApp.gic = app.gic;
+    if (app.visa && Object.keys(app.visa).length > 0) {
+      transformedApp.visa = app.visa;
     }
     if (
       app.courseFeeApplication &&
@@ -411,17 +419,22 @@ const applicationOverview = asyncHandler(async (req, res) => {
   };
 
   // Use a regular expression to search all relevant fields in studentInfo
-  matchCondition.$or = [
-    { "studentInfo.stId": { $regex: searchData, $options: "i" } },
-    {
-      "studentInfo.personalInformation.firstName": {
-        $regex: searchData,
-        $options: "i",
+
+  if(searchData){
+    matchCondition.$or = [
+      { "studentInfo.stId": { $regex: searchData, $options: "i" } },
+      {
+        "studentInfo.personalInformation.firstName": {
+          $regex: searchData,
+          $options: "i",
+        },
       },
-    },
-    { "offerLetter.status": { $regex: searchData, $options: "i" } },
-    { institutionName: { $regex: searchData, $options: "i" } },
-  ];
+      { "offerLetter.status": { $regex: searchData, $options: "i" } },
+      { "courseFeeApplication.status": { $regex: searchData, $options: "i" } },
+      { "visa.status": { $regex: searchData, $options: "i" } },
+      { institutionName: { $regex: searchData, $options: "i" } },
+    ];
+  }
 
   // Step 2: Perform the aggregation query
   const aggregationPipeline = [
@@ -444,11 +457,24 @@ const applicationOverview = asyncHandler(async (req, res) => {
         totalCount: { $sum: 1 },
         underReviewCount: {
           $sum: {
-            $cond: [{ $eq: ["$offerLetter.status", "underreview"] }, 1, 0],
+            $sum: [
+              { $cond: [{ $eq: ["$offerLetter.status", "underreview"] }, 1, 0] },
+              { $cond: [{ $eq: ["$courseFeeApplication.status", "underreview"] }, 1, 0] },
+              { $cond: [{ $eq: ["$visa.status", "underreview"] }, 1, 0] },
+            ],
           },
         },
         approvedCount: {
-          $sum: { $cond: [{ $eq: ["$offerLetter.status", "approved"] }, 1, 0] },
+          $sum: {
+            $sum: [
+              { $cond: [{ $eq: ["$offerLetter.status", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$offerLetter.status", "approvedbyembassy"] }, 1, 0] },
+              { $cond: [{ $eq: ["$courseFeeApplication.status", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$courseFeeApplication.status", "approvedbyembassy"] }, 1, 0] },
+              { $cond: [{ $eq: ["$visa.status", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$visa.status", "approvedbyembassy"] }, 1, 0] },
+            ],
+          },
         },
       },
     },
@@ -1002,11 +1028,11 @@ const getStudentAllApplications = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const query = { studentInformationId };
+  const query = { studentInformationId, deleted: false };
 
   // If status is provided, add it to the query to filter by status
   if (status) {
-    query.$or = [{ "offerLetter.status": status }, { "gic.status": status }];
+    query.$or = [{ "offerLetter.status": status }, { "courseFeeApplication.status": status }, { "visa.status": status }];
   }
 
   // Check if searchData is provided, and perform a search across multiple fields
@@ -1019,7 +1045,8 @@ const getStudentAllApplications = asyncHandler(async (req, res) => {
           $options: "i",
         },
       },
-      { "gic.personalDetails.fullName": { $regex: searchData, $options: "i" } },
+      { "courseFeeApplications.personalDetails.fullName": { $regex: searchData, $options: "i" } },
+      { "visa.personalDetails.fullName": { $regex: searchData, $options: "i" } },
       { "preferences.course": { $regex: searchData, $options: "i" } },
       // Add more fields if needed
     ];
@@ -1133,9 +1160,9 @@ const reSubmitApplication = asyncHandler(async (req, res) => {
   const status = "underreview";
 
   // Validate the input
-  if (!section || !["offerLetter", "gic"].includes(section)) {
+  if (!section || !["offerLetter", "courseFeeApplication"].includes(section)) {
     return res.status(400).json({
-      message: "Invalid section. Please provide 'offerLetter' or 'gic'.",
+      message: "Invalid section. Please provide 'offerLetter' or 'courseFeeApplication'.",
     });
   }
 

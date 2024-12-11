@@ -6,7 +6,7 @@ const router = Router();
 router.route("/upload").post(uploadDocument);
 router.route("/all/:userId").get(verifyJwt, getAllDocuments);
 router.route("/all-doc/:userId").get(verifyJwt, getAllDocumentOnce);
-router.route("/all-admin").get(verifyAdmin, getAllDocuments);
+router.route("/all-admin/:userId").get( getAllDocuments);
 router.route("/:id").get(verifyJwt, getSingleDocument);
 router.route("/:id").delete(verifyJwt, deleteDocument);
 router.route("/delete-document").patch(verifyJwt, deleteDocumentByUrl);

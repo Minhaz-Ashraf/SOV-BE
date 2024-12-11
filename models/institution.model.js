@@ -250,6 +250,10 @@ const InstitutionSchema = new Schema({
     userId: {
         type: String,
         required: true
+    },
+    deleted: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true  // Automatically add createdAt and updatedAt fields

@@ -22,6 +22,7 @@ export const getTotalStudentCount = asyncHandler(async (req, res) => {
     // Count student records for the last 7 days
     const insertedRecords = await StudentInformation.countDocuments({
       agentId: req.user.id,
+      "pageStatus.status": "completed",
       createdAt: { $gte: sevenDaysAgo },
       deleted: false
     });
@@ -29,6 +30,7 @@ export const getTotalStudentCount = asyncHandler(async (req, res) => {
     // Count student records for the previous 7 days (from 14 days ago to 7 days ago)
     const previousRecordCount = await StudentInformation.countDocuments({
       agentId: req.user.id,
+      "pageStatus.status": "completed",
       createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo },
       deleted: false
     });
@@ -41,6 +43,7 @@ export const getTotalStudentCount = asyncHandler(async (req, res) => {
     // Count the total student records for the agent from the beginning to the current date
     const totalRecords = await StudentInformation.countDocuments({
       agentId: req.user.id,
+      "pageStatus.status": "completed",
       deleted: false
     });
   
@@ -147,9 +150,13 @@ export const getTotalUnderReviewCount = asyncHandler(async (req, res) => {
                 'offerLetter.personalInformation': { $exists: true } // Check if offerLetter has data
             },
             { 
-                'gic.status': 'underreview',
-                'gic.personalDetails': { $exists: true } // Check if gic has data
-            }
+                'courseFeeApplication.status': 'underreview',
+                'courseFeeApplication.personalDetails': { $exists: true } // Check if courseFeeApplication has data
+            },
+            { 
+                'visa.status': 'underreview',
+                'visa.personalDetails': { $exists: true } // Check if visa has data
+            },
         ]
     });
 
@@ -163,9 +170,13 @@ export const getTotalUnderReviewCount = asyncHandler(async (req, res) => {
                 'offerLetter.personalInformation': { $exists: true } // Check if offerLetter has data
             },
             { 
-                'gic.status': 'underreview',
-                'gic.personalDetails': { $exists: true } // Check if gic has data
-            }
+                'courseFeeApplication.status': 'underreview',
+                'courseFeeApplication.personalDetails': { $exists: true } // Check if courseFeeApplication has data
+            },
+            { 
+                'visa.status': 'underreview',
+                'visa.personalDetails': { $exists: true } // Check if visa has data
+            },
         ],
         createdAt: { $gte: sevenDaysAgo }
     });
@@ -180,9 +191,13 @@ export const getTotalUnderReviewCount = asyncHandler(async (req, res) => {
                 'offerLetter.personalInformation': { $exists: true } // Check if offerLetter has data
             },
             { 
-                'gic.status': 'underreview',
-                'gic.personalDetails': { $exists: true } // Check if gic has data
-            }
+                'courseFeeApplication.status': 'underreview',
+                'courseFeeApplication.personalDetails': { $exists: true } // Check if courseFeeApplication has data
+            },
+            { 
+                'visa.status': 'underreview',
+                'visa.personalDetails': { $exists: true } // Check if visa has data
+            },
         ],
         createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo }
     });
@@ -222,7 +237,11 @@ export const getTotalCompletedCount = asyncHandler(async (req, res) => {
         deleted: false,
         $or: [
             { 'offerLetter.status': 'approved' },  
-            { 'gic.status': 'approved' }
+            { 'courseFeeApplication.status': 'approved' },
+            { 'visa' : 'approved' },
+            { 'offerLetter.status': 'approvedbyembassy' },  
+            { 'courseFeeApplication.status': 'approvedbyembassy' },
+            { 'visa' : 'approvedbyembassy' }
         ]
     });
 
@@ -232,7 +251,11 @@ export const getTotalCompletedCount = asyncHandler(async (req, res) => {
         deleted: false,
         $or: [
             { 'offerLetter.status': 'approved' },
-            { 'gic.status': 'approved' }
+            { 'courseFeeApplication.status': 'approved' },
+            { 'visa' : 'approved' },
+            { 'offerLetter.status': 'approvedbyembassy' },  
+            { 'courseFeeApplication.status': 'approvedbyembassy' },
+            { 'visa' : 'approvedbyembassy' }
         ],
         createdAt: { $gte: sevenDaysAgo }
     });
@@ -243,7 +266,11 @@ export const getTotalCompletedCount = asyncHandler(async (req, res) => {
         deleted: false,
         $or: [
             { 'offerLetter.status': 'approved' },
-            { 'gic.status': 'approved' }
+            { 'courseFeeApplication.status': 'approved' },
+            { 'visa' : 'approved' },
+            { 'offerLetter.status': 'approvedbyembassy' },  
+            { 'courseFeeApplication.status': 'approvedbyembassy' },
+            { 'visa' : 'approvedbyembassy' }
         ],
         createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo }
     });
@@ -262,7 +289,7 @@ export const getTotalCompletedCount = asyncHandler(async (req, res) => {
 
 export const getTotalApplicationOverview = asyncHandler(async(req, res)=>{
 
-if (req.user.role !== '2') {
+    if (req.user.role !== '2') {
         return res.status(403).json(new ApiResponse(403, {}, "You are not authorized to view this information"));
     }
 
@@ -297,7 +324,7 @@ if (req.user.role !== '2') {
     // Count GIC applications
     const gicCount = await Institution.countDocuments({
         ...match,
-        'gic.status': { $exists: true },
+        'courseFeeApplication.status': { $exists: true },
         deleted: false
     });
     
@@ -322,11 +349,11 @@ export const getTotalUsersCountForAgent = asyncHandler(async (req, res) => {
   if (req.user.role !== '2') {
     return res.status(403).json(new ApiResponse(403, {}, "You are not authorized to view this information"));
   }
-  const { date } = req.query;
+  const { year } = req.query;
   const matchFilter = {agentId: req.user.id, deleted : false};
-  if (date) {
-    const startOfYear = new Date(`${date}-01-01`);
-    const endOfYear = new Date(`${date}-12-31`);
+  if (year) {
+    const startOfYear = new Date(`${year}-01-01`);
+    const endOfYear = new Date(`${year}-12-31`);
     matchFilter.createdAt = { $gte: startOfYear, $lte: endOfYear };
   }
   const studentMonthlyCounts = await StudentInformation.aggregate([
@@ -364,11 +391,11 @@ export const getApplicationMonthlyCountForAgent = asyncHandler(async (req, res) 
   if (req.user.role !== '2') {
     return res.status(403).json(new ApiResponse(403, {}, "You are not authorized to view this information"));
   }
-  const { date, applicationType } = req.query;
+  const { year, applicationType } = req.query;
   const matchFilter = {userId: req.user.id};
-  if (date) {
-    const startOfYear = new Date(`${date}-01-01`);
-    const endOfYear = new Date(`${date}-12-31`);
+  if (year) {
+    const startOfYear = new Date(`${year}-01-01`);
+    const endOfYear = new Date(`${year}-12-31`);
     matchFilter.createdAt = { $gte: startOfYear, $lte: endOfYear };
   }
   if (applicationType) {

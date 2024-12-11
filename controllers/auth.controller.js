@@ -321,11 +321,11 @@ const changePassword = asyncHandler(async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      payload.password,
+      payload.newPassword,
       user.password
     );
-    if (!isPasswordValid) {
-      return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
+    if (isPasswordValid) {
+      return res.status(400).json(new ApiResponse(400, {}, "password is same as old password"));
     }
     const hashPassword = await bcrypt.hash(payload.newPassword, 10);
     await Student.findOneAndUpdate(
@@ -347,11 +347,11 @@ const changePassword = asyncHandler(async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      payload.password,
+      payload.newPassword,
       user.password
     );
-    if (!isPasswordValid) {
-      return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
+    if (isPasswordValid) {
+      return res.status(400).json(new ApiResponse(400, {}, "password is same as old password"));
     }
 
     const hashPassword = await bcrypt.hash(payload.newPassword, 10);
@@ -364,7 +364,7 @@ const changePassword = asyncHandler(async (req, res) => {
       },
       { new: true }
     );
-    firstName = user.primaryContactPerson.name;
+    firstName = user.accountDetails.primaryContactPerson.name;
     email = user.accountDetails.founderOrCeo.email;
   } else {
     return res.status(400).json(new ApiResponse(400, {}, "Invalid user type "));
@@ -812,8 +812,8 @@ const verifyAndChangeEmail = asyncHandler(async (req, res) => {
 });
 
 const sendOptForEmail = asyncHandler(async(req, res)=>{
-  const {email} = req.body;
-  if(!email){
+  const {email, password} = req.body;
+  if(!email || !password){
     return res.status(400).json(new ApiResponse(400, {}, "Enter valid email"))
   }
   
@@ -824,7 +824,11 @@ const sendOptForEmail = asyncHandler(async(req, res)=>{
       const agent  = await Agent.findById(req.user.id);
        if (!agent) {
       return res.status(404).json(new ApiResponse(404, {}, "Agent not found"));
-    }
+      }
+      const isPasswordValid = await bcrypt.compare(password, agent.password);
+      if (!isPasswordValid) {
+        return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
+      }
     agent.emailOtp = OTP;
     agent.otpExpiry = otpExpiry;
     await agent.save();
@@ -834,6 +838,10 @@ const sendOptForEmail = asyncHandler(async(req, res)=>{
       const student = await Student.findById(req.user.id);
       if (!student) {
         return res.status(404).json(new ApiResponse(404, {}, "Student not found"));
+      }
+      const isPasswordValid = await bcrypt.compare(password, student.password);
+      if (!isPasswordValid) {
+        return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
       }
 
     student.emailOtp = OTP;

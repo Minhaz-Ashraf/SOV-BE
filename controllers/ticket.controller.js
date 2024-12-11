@@ -120,9 +120,7 @@ export const getTicketById = asyncHandler(async (req, res) => {
   const { ticketId } = req.params;
 
   const ticket = await Ticket.findOne({ _id: ticketId, deleted : false }).select("-__v").exec();
-   const userId =  ticket.createdBy
      
-
   if (!ticket) {
     return res.status(404).json(new ApiResponse(404, {}, "Ticket not found"));
   }
@@ -140,15 +138,14 @@ export const getAllTickets = asyncHandler(async (req, res) => {
     priorityStatus,
     status,
     searchData,
-    startDate,
-    endDate,
+    date,
     userType
   } = req.query;
 
   const pageNumber = parseInt(page, 10);
   const limitNumber = parseInt(limit, 10);
 
-  const query = {deleted : false};
+  const query = {};
 
   if (userType) {
     query.userType = userType;
@@ -172,8 +169,14 @@ export const getAllTickets = asyncHandler(async (req, res) => {
   }
 
   // Add date filtering based on createdAt field
-  if (startDate || endDate) {
+  if (date) {
     query.createdAt = {};
+    const startDate = new Date(date); // Set to the given date
+    startDate.setHours(0, 0, 0, 0); // Start of the day
+  
+    const endDate = new Date(date); // Clone the given date
+    endDate.setHours(23, 59, 59, 999); // End of the day
+
     if (startDate) {
       query.createdAt.$gte = new Date(startDate); // Start date (inclusive)
     }
@@ -240,8 +243,7 @@ export const getAllTicketsSubadmin = asyncHandler(async (req, res) => {
     priorityStatus,
     status,
     searchData,
-    startDate,
-    endDate,
+    date,
     userType
   } = req.query;
 
@@ -276,8 +278,14 @@ export const getAllTicketsSubadmin = asyncHandler(async (req, res) => {
   }
 
   // Add date filtering based on createdAt field
-  if (startDate || endDate) {
+  if (date) {
     query.createdAt = {};
+    const startDate = new Date(date); // Set to the given date
+    startDate.setHours(0, 0, 0, 0); // Start of the day
+  
+    const endDate = new Date(date); // Clone the given date
+    endDate.setHours(23, 59, 59, 999); // End of the day
+
     if (startDate) {
       query.createdAt.$gte = new Date(startDate); // Start date (inclusive)
     }
@@ -511,8 +519,10 @@ export const getMyTickets = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
+  const {search} = req.query
+
   // Build search and filter conditions
-  const searchQuery = { createdBy: req.user._id };
+  let searchQuery = { createdBy: req.user._id, deleted: false };
 
   if (req.query.ticketId) {
     searchQuery.ticketId = req.query.ticketId;
@@ -534,6 +544,16 @@ export const getMyTickets = asyncHandler(async (req, res) => {
     if (req.query.endDate) {
       searchQuery.createdAt.$lte = new Date(req.query.endDate);
     }
+  }
+  if (search) {
+    searchQuery.$or = [
+      { studentId: { $regex: search, $options: 'i' } },
+      { ticketType: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } },
+      { status: { $regex: search, $options: 'i' } },
+      { createdBy: { $regex: search, $options: 'i' } },
+      { ticketId: { $regex: search, $options: 'i' } }
+    ];
   }
 
   // Fetch tickets with pagination, search, and filter

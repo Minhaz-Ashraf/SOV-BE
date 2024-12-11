@@ -37,7 +37,7 @@ const getAllDocuments = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     
     const andConditions = []
-    if(req.params && req.user.role !== "0"){
+    if(req.params){
         const userId = req.params.userId;
         if(!userId){
             return res.status(400).json(new ApiResponse(400, {}, "User ID is required"));

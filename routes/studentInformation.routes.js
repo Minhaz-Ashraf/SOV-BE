@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteStudentData,
   deleteStudentInformation,
   getAdminDocument,
   getAllAgentStudent,
@@ -47,7 +48,7 @@ router.route("/agent-student-admin").get(verifyAdmin, getAllAgentStudentAdmin);
 router.route("/student-information/:formId").get(verifyJwt, getStudentFormById);
 router
   .route("/student-information/:id")
-  .delete(verifyJwt, deleteStudentInformation);
+  .delete(verifyJwt, deleteStudentData);
 router
   .route("/personal-information/:id")
   .patch(verifyJwt, studentPersonalInformationEdit);
