@@ -45,12 +45,12 @@ const __dirname = path.dirname(__filename);
 
 // Get total agents count
 const getTotalAgentsCount = asyncHandler(async (req, res) => {
-  const totalAgent = await Agent.countDocuments({ role: "2", deleted: false});
+  const totalAgent = await Company.countDocuments({ deleted: false, "pageStatus.status" : "completed"});
 
   const fifteenDaysAgo = new Date();
   fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
-  const activeAgentCount = await Agent.countDocuments({ role : "2", lastLogin : {$gte: fifteenDaysAgo}, deleted: false});
+  const activeAgentCount = await Company.countDocuments({ lastLogin : {$gte: fifteenDaysAgo}, deleted: false, "pageStatus.status" : "completed"});
   return res
     .status(200)
     .json(new ApiResponse(200, {totalAgent, activeAgentCount}, "Agent count got successfully"));
@@ -58,12 +58,12 @@ const getTotalAgentsCount = asyncHandler(async (req, res) => {
 
 // Get all students count
 const getTotalStudentCount = asyncHandler(async (req, res) => {
-  const studentCount = await Student.countDocuments({deleted : false});
+  const studentCount = await StudentInformation.countDocuments({deleted : false, "pageStatus.status" : "completed"});
 
   const fifteenDaysAgo = new Date();
   fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
-  const activeStudentCount = await Student.countDocuments({ role : "3", lastLogin : {$gte: fifteenDaysAgo}, deleted : false })
+  const activeStudentCount = await StudentInformation.countDocuments({lastLogin : {$gte: fifteenDaysAgo}, deleted : false, "pageStatus.status" : "completed" });
   return res
     .status(200)
     .json(new ApiResponse(200, {studentCount, activeStudentCount}, "Student count got successfully"));
@@ -279,7 +279,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-  const query = {};
+  const query = {deleted: false};
   const andConditions = [];
 
   // Handle status filter for both offerLetter and gic
@@ -330,7 +330,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
     .select("-__v") // Exclude __v field
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit)
+    .limit(limit + 1)
     .lean();
 
   const totalApplications = await Institution.countDocuments(query);
@@ -1157,9 +1157,10 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
 const getTotalApplicationCount = asyncHandler(async (req, res) => {
   const totalCount = await Institution.countDocuments({
     $or: [
-      { "offerLetter.status": { $exists: true } },
-      { "visa.status": { $exists: true } },
-      { "courseFeeApplication.status": { $exists: true } }
+      { "offerLetter.type": "offerLetter" },
+      { "gic.type": "GIC" },
+      { "visa.personalDetails": { $exists: true } },
+      { "courseFeeApplication.personalDetails": { $exists: true } }
     ],
     deleted : false,
   });
@@ -1167,6 +1168,7 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
   const pendingCount = await Institution.countDocuments({
     $or: [
       { "offerLetter.status": "underreview" },
+      { "gic.status": "underreview" },
       { "visa.status": "underreview" },
       { "courseFeeApplication.status": "underreview" }
     ],
@@ -1176,6 +1178,7 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
   const approvedCount = await Institution.countDocuments({
     $or: [
       { "offerLetter.status": "approved" },
+      { "gic.status": "approved" },
       { "visa.status": "approved" },
       { "courseFeeApplication.status": "approved" }
     ],
@@ -1436,7 +1439,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
   if (userType === "agent" || !userType) {
     agents = await Company.find(searchCondition)
       .select(
-        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus"
+        "primaryContact.firstName primaryContact.lastName agId _id pageStatus"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * agentLimit)
@@ -1449,7 +1452,6 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
         firstName: firstName || "N/A",
         lastName: lastName || "N/A",
         agId: company.agId,
-        agentId: company.agentId,
         _id: company._id,
         message: company.pageStatus?.message || "",
         status: company.pageStatus?.status || "",
@@ -1514,7 +1516,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
       // Fetch more agents if less students found
       const additionalAgents = await Company.find(searchCondition)
         .select(
-          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message"
+          "primaryContact.firstName primaryContact.lastName agId _id pageStatus.message"
         )
         .sort({ createdAt: -1 })
         .skip(agentLimit)
@@ -1528,7 +1530,6 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
             firstName: firstName || "N/A",
             lastName: lastName || "N/A",
             agId: company.agId,
-            agentId: company.agentId,
             _id: company._id,
             message: company.pageStatus?.message || "",
             type: "agent",
@@ -2086,8 +2087,8 @@ const getAllAgent = asyncHandler(async (req, res) => {
   const agentFilter = {
     $or: [
       { "accountDetails.primaryContactPerson.name": { $regex: search, $options: "i" } },
-      { "accountDetails.founderOrCeo.email": { $regex: search, $options: "i" } },
-      { "accountDetails.founderOrCeo.phone": { $regex: search, $options: "i" } },
+      { "accountDetails.primaryContactPerson.email": { $regex: search, $options: "i" } },
+      { "accountDetails.primaryContactPerson.phone": { $regex: search, $options: "i" } },
       { _id: { $in: matchingAgentIds } }, // Add this to filter by matching agent IDs from Company
     ],
   };
@@ -2098,7 +2099,7 @@ const getAllAgent = asyncHandler(async (req, res) => {
 
   // Step 3: Find agents matching the combined search criteria
   const agents = await Agent.find(agentFilter)
-    .select("accountDetails.primaryContactPerson accountDetails.founderOrCeo")
+    .select("accountDetails.primaryContactPerson")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
@@ -2110,8 +2111,8 @@ const getAllAgent = asyncHandler(async (req, res) => {
       const company = await Company.findOne({ agentId: agent._id }).select("agId").lean();
       return {
         name: agent.accountDetails.primaryContactPerson.name,
-        email: agent.accountDetails.founderOrCeo.email,
-        phone: agent.accountDetails.founderOrCeo.phone,
+        email: agent.accountDetails.primaryContactPerson.email,
+        phone: agent.accountDetails.primaryContactPerson.phone,
         id: agent._id || null,
         agId: company?.agId || null,
       };
@@ -2414,7 +2415,6 @@ const getAllStudentApplications = asyncHandler(async (req, res) => {
     }, "Data retrieved successfully")
   );
 });
-
 
 const updateVisaDetails = async (req, res) => {
   try {
@@ -3177,7 +3177,7 @@ const deleteAdminDocumentByUrl = asyncHandler(async (req, res) => {
 const getRecievedDocument = asyncHandler(async (req, res) => {
 
   // Fetch all documents for the given query
-  const documents = await adminDocument.find({ applicationId: req.query.applicationId}).select("-__v")
+  const documents = await adminDocument.find({applicationId : req.query.studentId}).select("-__v")
       .sort({ createdAt: -1 })
       .lean();
 

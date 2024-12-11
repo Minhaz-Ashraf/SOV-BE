@@ -36,7 +36,7 @@ const getAllInstitute = asyncHandler(async (req, res) => {
 });
 
 const addInstitute = asyncHandler(async(req, res)=>{
-    const { instituteName, country } = req.body;
+    const { instituteName, country, instituteImg, offerLetterPrice, aboutCollegeOrInstitute, keyHighlights, popularCourses, admissionAndFacilities } = req.body;
 
     if (!instituteName || !country) {
       return res.status(400).json({
@@ -48,6 +48,12 @@ const addInstitute = asyncHandler(async(req, res)=>{
     const institute = new Institute({
       instituteName,
       country,
+      instituteImg,
+      offerLetterPrice,
+      aboutCollegeOrInstitute,
+      keyHighlights,
+      popularCourses,
+      admissionAndFacilities
     });
 
     await institute.save();

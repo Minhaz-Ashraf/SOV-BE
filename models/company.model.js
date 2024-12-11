@@ -268,6 +268,10 @@ const CompanySchema = new Schema({
     type: Boolean,
     default: false,
   },
+  lastLogin: {
+    type: Date,
+    required: false
+  }
 }, {
   timestamps: true,  // Automatically add createdAt and updatedAt fields
 });

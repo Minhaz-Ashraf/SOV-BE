@@ -20,6 +20,8 @@ import { TempAgent } from "../models/tempAgent.model.js";
 import crypto from 'crypto'; // Import crypto for generating a unique token
 import { Student } from "../models/student.model.js";
 import { agentAccountCredentials, agentPasswordResetEmail, agentSignUpTemp, changeRegisteredEmail, changeRegisteredPassword, emailChangeOtpTemplate, studentAccountCredentials, studentPasswordResetEmail, studentSignUpTemp } from "../utils/mailTemp.js";
+import { StudentInformation } from "../models/studentInformation.model.js";
+import { Company } from "../models/company.model.js";
 
 
 
@@ -238,7 +240,7 @@ const login = asyncHandler(async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
     }
-    await Student.findByIdAndUpdate(user._id, {lastLogin : new Date()});
+    await StudentInformation.findByIdAndUpdate({studentId : user._id}, {lastLogin : new Date()});
     loggedInUser = await Student.findById(user._id).select("-password -refreshToken");
 
   } else if (payload.role === "2" || payload.role === '0') {
@@ -253,7 +255,7 @@ const login = asyncHandler(async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
     }
-    await Agent.findByIdAndUpdate(user._id);
+    await Company.findByIdAndUpdate({agentId : user._id}, {lastLogin : new Date()});
     loggedInUser = await Agent.findById(user._id).select("-password -refreshToken");
 
   } else {

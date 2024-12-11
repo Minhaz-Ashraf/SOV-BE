@@ -62,15 +62,6 @@ const DocumentUploadSchema = new Schema(
       type: String,
       required: false, // Optional field
     },
-    parentAadharCard: {
-      type: String,
-      required: false, // Optional field
-    },
-    parentPanCard: {
-      type: String,
-      required: false, // Optional field
-    },
-    
   },
   { _id: false }
 );

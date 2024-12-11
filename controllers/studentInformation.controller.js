@@ -294,7 +294,7 @@ const studentPreference = asyncHandler(async (req, res) => {
   }
 
   // Generate Student ID
-  const stId = await generateStudentId();
+  let stId
   let studentInfo;
 
   if (edit) {
@@ -317,6 +317,13 @@ const studentPreference = asyncHandler(async (req, res) => {
   } else {
     // Add new student preferences and status
     let status = req.user.role === "2" ? "completed" : "notapproved";
+    const studentInfoData = await StudentInformation.findById(formId).lean();
+
+    if(!studentInfoData.stId){
+      stId = await generateStudentId();
+    }else {
+      stId = studentInfoData.stId;
+    }
 
     studentInfo = await StudentInformation.findOneAndUpdate(
       { _id: formId },
@@ -622,7 +629,7 @@ const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
   }
 
   // Build initial match query
-  let matchQuery = {deleted : false};
+  let matchQuery = {deleted : false, "pageStatus.status": "completed"};
 
   if(agentId){
     matchQuery.agentId = agentId;

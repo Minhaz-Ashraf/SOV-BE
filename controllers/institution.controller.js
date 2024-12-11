@@ -1,3 +1,4 @@
+import { adminDocument } from "../models/adminDocument.model.js";
 import { Institution } from "../models/institution.model.js";
 import { StudentInformation } from "../models/studentInformation.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -1028,7 +1029,7 @@ const getStudentAllApplications = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const query = { studentInformationId, deleted: false };
+  const query = { studentInformationId: new mongoose.Types.ObjectId(studentInformationId), deleted: false };
 
   // If status is provided, add it to the query to filter by status
   if (status) {
@@ -1052,94 +1053,58 @@ const getStudentAllApplications = asyncHandler(async (req, res) => {
     ];
   }
 
-  // Fetch applications with pagination, search, and status filter
-  const applications = await Institution.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
 
-  if (!applications || applications.length === 0) {
-    return res
-      .status(404)
-      .json(new ApiResponse(404, {}, "No applications found"));
-  }
-
-  // Total count of applications (without pagination) for the given filters
+  const projectStage = [
+    { $match: query },
+    { $sort: { createdAt: -1 } },
+    { $skip: skip },
+    { $limit: limit },
+    {
+      $addFields: {
+        _idAsString: { $toString: "$_id" }, // Convert _id to a string
+      },
+    },
+    {
+      $lookup: {
+        from: "admindocuments",
+        localField: "_idAsString", // Use the string version of _id
+        foreignField: "applicationId", // Match against the applicationId field
+        as: "documents",
+      },
+    }, 
+    {
+      $project: {
+        documents: {
+          $reduce: {
+            input: "$documents",
+            initialValue: [],
+            in: { $concatArrays: ["$$value", "$$this.document"] },
+          },
+        },
+        visa: 1,
+        courseFeeApplication: 1,
+        offerLetter: 1,
+        createdAt: 1,
+        _id: 1,
+        applicationId: 1,
+        userId: 1,
+        studentInformationId: 1,
+        deleted: 1,
+        updatedAt: 1,
+      },
+    },
+  ];
+  const finalDocuments = await Institution.aggregate(projectStage);
+  
   const totalApplications = await Institution.countDocuments(query);
-
-  // Construct the response for each application
-  const result = applications
-    .map((application) => {
-      let applicationResponse = {
-        _id: application._id,
-        applicationId: application.applicationId,
-        userId: application.userId,
-        studentInformationId: application.studentInformationId,
-      };
-
-      // Check if visa has meaningful data (more than just type or empty arrays)
-      if (
-        application.visa &&
-        Object.keys(application.visa).some(
-          (key) =>
-            key !== "type" &&
-            application.visa[key] &&
-            application.visa[key].length !== 0
-        )
-      ) {
-        applicationResponse.visa = {
-          ...application.visa,
-          type: "visa",
-        };
-      }
-
-      // Check if offerLetter has meaningful data
-      if (
-        application.offerLetter &&
-        Object.keys(application.offerLetter).some(
-          (key) =>
-            key !== "type" &&
-            application.offerLetter[key] &&
-            application.offerLetter[key].length !== 0
-        )
-      ) {
-        applicationResponse.offerLetter = {
-          ...application.offerLetter,
-          type: "offerLetter",
-        };
-      }
-
-      // Check if courseFeeApplication has meaningful data
-      if (
-        application.courseFeeApplication &&
-        Object.keys(application.courseFeeApplication).some(
-          (key) =>
-            key !== "type" &&
-            application.courseFeeApplication[key] &&
-            application.courseFeeApplication[key].length !== 0
-        )
-      ) {
-        applicationResponse.courseFeeApplication = {
-          ...application.courseFeeApplication,
-          type: "courseFeeApplication",
-        };
-      }
-
-      // Only include applications with non-empty data sections
-      const hasData =
-        applicationResponse.visa ||
-        applicationResponse.offerLetter ||
-        applicationResponse.courseFeeApplication;
-
-      return hasData ? applicationResponse : null;
-    })
-    .filter(Boolean); // Removes any null values from the array
-
-    const totalPages = Math.ceil(totalApplications / limit);
-    const pagination = {
-      currentPage: page,
-      previousPage: page > 1 ? page - 1 : null,
-      nextPage: page < totalPages ? page + 1 : null,
-      totalPages,
-      totalApplications,
-    };
+  const totalPages = Math.ceil(totalApplications / limit);
+  const pagination = {
+    currentPage: page,
+    previousPage: page > 1 ? page - 1 : null,
+    nextPage: page < totalPages ? page + 1 : null,
+    totalPages,
+    totalApplications,
+  };
 
   // Return the response
   return res.status(200).json(
@@ -1147,7 +1112,7 @@ const getStudentAllApplications = asyncHandler(async (req, res) => {
       200,
       {
         ...pagination,
-        applications: result,
+        applications: finalDocuments,
       },
       "Applications fetched successfully"
     )

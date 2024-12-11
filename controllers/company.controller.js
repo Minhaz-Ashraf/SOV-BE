@@ -297,7 +297,7 @@ const registerReferences = asyncHandler(async (req, res) => {
   const { body: payload } = req;
 
   // Validate the payload using Zod
-  const result = z.array(ReferenceSchema).safeParse(payload);
+  const result = z.array(ReferenceSchema).safeParse(payload.references);
   if (!result.success) {
     return res.status(400).json(new ApiResponse(400, {}, result.error.errors));
   }
@@ -327,14 +327,14 @@ const registerReferences = asyncHandler(async (req, res) => {
   const { edit } = req.query;
 
   if (edit) {
-    company.references = payload;  // Assuming the whole reference array is being replaced
+    company.references = payload.references;  // Assuming the whole reference array is being replaced
   } else {
     company.references = result.data;  // Insert the validated references
     company.pageStatus.status = 'notapproved';  // Set status to notapproved
     company.pageCount = 6;  // Set the page count to 6 (this is based on your logic)
     
     // Check if pageStatus.status is 'rejected'; if so, don't generate a new agentId
-    if (company.pageStatus.status !== 'rejected') {
+    if (!company.agId) {
       company.agId = await generateAgentId();  // Generate and assign a new agentId if status is not rejected
     }
 

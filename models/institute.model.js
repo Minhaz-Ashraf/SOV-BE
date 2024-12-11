@@ -8,6 +8,9 @@ const InstituteSchema = new Schema({
     required: true,
     trim: true,
   },
+  instituteImg:{
+    type: String,
+  },
   country: {
     type: String,
     required: true,
