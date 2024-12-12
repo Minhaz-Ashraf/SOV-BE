@@ -240,7 +240,7 @@ const login = asyncHandler(async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
     }
-    await StudentInformation.findByIdAndUpdate({studentId : user._id}, {lastLogin : new Date()});
+    await StudentInformation.findOneAndUpdate({studentId : user.id}, {lastLogin : new Date()});
     loggedInUser = await Student.findById(user._id).select("-password -refreshToken");
 
   } else if (payload.role === "2" || payload.role === '0') {
@@ -255,7 +255,7 @@ const login = asyncHandler(async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json(new ApiResponse(400, {}, "Invalid password"));
     }
-    await Company.findByIdAndUpdate({agentId : user._id}, {lastLogin : new Date()});
+    await Company.findOneAndUpdate({agentId : user.id}, {lastLogin : new Date()});
     loggedInUser = await Agent.findById(user._id).select("-password -refreshToken");
 
   } else {
@@ -263,7 +263,7 @@ const login = asyncHandler(async (req, res) => {
   }
 
   let userData = {
-    id: user._id,
+    id: user.id,
     email: user.email,
     role: payload.role,
   };
