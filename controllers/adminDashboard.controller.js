@@ -694,7 +694,7 @@ const changeApplicationStatus = asyncHandler(async (req, res) => {
         );
         await sendEmail({
           to: findAgent.accountDetails.founderOrCeo.email,
-          subject: `Course Fee Application Rejected  – Action Required`,
+          subject: ` Course Fee Application Approved `,
           htmlContent: temp,
         });
       }
@@ -1192,11 +1192,11 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
 });
 
 const getTotalTicketCount = asyncHandler(async (req, res) => {
-  const totalCount = await Ticket.countDocuments();
+  const totalCount = await Ticket.countDocuments({deleted: false});
 
-  const pendingCount = await Ticket.countDocuments({ status: "underreview" });
+  const pendingCount = await Ticket.countDocuments({ status: "underreview", deleted: false });
 
-  const approvedCount = await Ticket.countDocuments({ status: "resolved" });
+  const approvedCount = await Ticket.countDocuments({ status: "resolved", deleted: false });
 
   return res.status(200).json(
     new ApiResponse(
@@ -1214,7 +1214,7 @@ const getTotalTicketCount = asyncHandler(async (req, res) => {
 const getTotalUserCount = asyncHandler(async (req, res) => {
   const { year } = req.query;
 
-  let dateFilter = {};
+  let dateFilter = {deleted: false};
   if (year) {
     const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`);
     const endOfYear = new Date(`${year}-12-31T23:59:59.999Z`);
@@ -2108,9 +2108,9 @@ const getAllAgent = asyncHandler(async (req, res) => {
   // Step 4: Populate agId for each agent by looking up in the `Company` collection
   const agentData = await Promise.all(
     agents.map(async (agent) => {
-      const company = await Company.findOne({ agentId: agent._id }).select("agId").lean();
+      const company = await Company.findOne({ agentId: agent._id }).select("agId primaryContact").lean();
       return {
-        name: company.primaryContact.firstName,
+        name: company?.primaryContact?.firstName || "",
         email: agent.accountDetails.founderOrCeo.email,
         phone: agent.accountDetails.founderOrCeo.phone,
         id: agent._id || null,
@@ -2144,7 +2144,7 @@ const getAllAgent = asyncHandler(async (req, res) => {
 
 
 const deleteAgent = asyncHandler(async (req, res) => {
-  const { agentId } = req.params;
+  const { agentId } = req.params; //agentId
   let email;
   let firstName;
   let userId;
@@ -2190,7 +2190,7 @@ const deleteAgent = asyncHandler(async (req, res) => {
         }
       }
       await Withdrawal.updateMany(
-        { userId : studentInfo._id },
+        { userId : agentId },
         { $set : { deleted: true } },
         { session }
       );
@@ -2202,6 +2202,11 @@ const deleteAgent = asyncHandler(async (req, res) => {
       );
       
     }
+    await Withdrawal.updateMany(
+      { userId : agentId },
+      { $set : { deleted: true } },
+      { session }
+    );
 
     await Institution.updateMany(
       { userId: agentId },

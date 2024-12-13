@@ -187,6 +187,7 @@ const InstitutionSchema = new Schema({
             type: String,
             enum: ['underreview', , 'rejected', 'approved'],  // Valid status values     
         },
+        message: { type: String }
     },
     visa:{
         personalDetails: PersonalInformationSchema,

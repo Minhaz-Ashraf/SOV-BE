@@ -15,6 +15,7 @@ import fs from "fs";
 import { parse as json2csv } from "json2csv";
 import { agentSideTicketApResolved, studentSideTicketResolved } from "../utils/mailTemp.js";
 import { fileURLToPath } from "url";
+import { sendEmail } from "../utils/sendMail.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -464,7 +465,7 @@ export const updateTicketStatus = asyncHandler(async (req, res) => {
   if (resolvedText) {
     ticket.resolvedText = resolvedText;
   }
-  await ticket.save();
+  // await ticket.save();
 
   // Return success response with the updated ticket
   return res

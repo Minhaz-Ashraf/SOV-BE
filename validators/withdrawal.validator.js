@@ -31,6 +31,7 @@ export const withdrawalDetailsSchema = z.object({
   parentBankDetails: bankDetailsSchema,
   documentUpload: documentUploadSchema,
   studentInformationId : z.string().nonempty("studentId is required"),
+  appliedFor : z.string().nonempty("appliedFor is required"),
 });
 
 

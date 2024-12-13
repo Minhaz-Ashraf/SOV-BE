@@ -26,21 +26,21 @@ export const restoreDeletedStatus = async (id, type, session) => {
       }
 
       const institutionUpdateResult = await Institution.updateMany(
-        { userId: id },
+        { userId: studentInfo.studentId },
         { $set: { deleted: false } },
         { session }
       );
       console.log("Updated Institutions:", institutionUpdateResult.modifiedCount);
 
       const withdrawalUpdateResult = await Withdrawal.updateMany(
-        { userId: id },
+        { userId: studentInfo.studentId },
         { $set: { deleted: false } },
         { session }
       );
       console.log("Updated Withdrawals:", withdrawalUpdateResult.modifiedCount);
 
       const ticketUpdateResult = await Ticket.updateMany(
-        { createdBy: id },
+        { createdBy: studentInfo.studentId },
         { $set: { deleted: false } },
         { session }
       );
@@ -78,7 +78,7 @@ export const restoreDeletedStatus = async (id, type, session) => {
         console.log("Updated Institutions for StudentInformation:", institutionUpdateResult.modifiedCount);
 
         const withdrawalUpdateResult = await Withdrawal.updateMany(
-          { userId: studentInfo._id },
+          { userId: company.agentId },
           { $set: { deleted: false } },
           { session }
         );

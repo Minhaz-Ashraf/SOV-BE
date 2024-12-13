@@ -40,6 +40,7 @@ const adminEmails = process.env.ADMIN_EMAIL?.split(',');
       parentBankDetails: withdrawalDetails.parentBankDetails,
       documentUpload: withdrawalDetails.documentUpload,
       studentInformationId: withdrawalDetails.studentInformationId,
+      appliedFor: withdrawalDetails.appliedFor
     };
 
     const latestInstitution = await Institution.findOne({ studentInformationId : withdrawalDetails.studentInformationId, "visa.status" : "rejectedbyembassy" })

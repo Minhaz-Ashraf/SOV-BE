@@ -798,7 +798,7 @@ const deleteStudentInformation = asyncHandler(async (req, res) => {
 
 
 const deleteStudentData = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; //studentInformationId
   let email;
   let firstName;
   let userId;
@@ -828,30 +828,38 @@ const deleteStudentData = asyncHandler(async (req, res) => {
         firstName = student.firstName;
         email = student.email;
       }
-    }
-    if (studentInfo.agentId) {
+      await Institution.updateMany(
+        { userId: studentInfo?.studentId }, //student_id
+        { $set : { deleted: true } },
+        { session }
+      );
+  
+      await Withdrawal.updateMany(
+        { userId : studentInfo?.studentId }, //student_id
+        { $set : { deleted: true } },
+        { session }
+      );
+  
+      await Ticket.updateMany(
+        { createdBy : studentInfo?.studentId }, //student_id
+        { $set : { deleted: true } },
+        { session }
+      );
+    }else if (studentInfo.agentId) {
       firstName = studentInfo.personalInformation.firstName;
       email = studentInfo.personalInformation.email;
+      await Institution.updateMany(
+        { userId: studentInfo.agentId }, //agent_id
+        { $set : { deleted: true } },
+        { session }
+      );
+  
+      await Withdrawal.updateMany(
+        { userId : studentInfo?.agentId }, //agent_id
+        { $set : { deleted: true } },
+        { session }
+      );
     }
-
-    await Institution.updateMany(
-      { userId: id },
-      { $set : { deleted: true } },
-      { session }
-    );
-
-    await Withdrawal.updateMany(
-      { userId : id },
-      { $set : { deleted: true } },
-      { session }
-    );
-
-    await Ticket.updateMany(
-      { createdBy : id },
-      { $set : { deleted: true } },
-      { session }
-    );
-
 
     await session.commitTransaction();
     session.endSession();
