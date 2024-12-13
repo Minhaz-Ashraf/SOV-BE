@@ -859,45 +859,64 @@ const sendOptForEmail = asyncHandler(async(req, res)=>{
 
 })
 
-const verifyOptAndUpdateEmail = asyncHandler(async(req, res)=>{
-    const payload = req.body;
-   if(!payload.email || !payload.otp){
-    return res.status(400).json(new ApiResponse(400, {}, "please enter email and otp"));
-   }
-
-   if(req.user.role === '2'){
-    const agent  = await Agent.findById(req.user.id);
-     if (!agent) {
-    return res.status(404).json(new ApiResponse(404, {}, "Agent not found"));
-  }
- 
-  if (agent.emailOtp !== payload.otp || agent.otpExpiry < Date.now()) {
-    return res.status(400).json( new ApiResponse (400, {}, "Invalid or expired OTP" ));
+const verifyOptAndUpdateEmail = asyncHandler(async (req, res) => {
+  const payload = req.body;
+  let oldEmail;
+  let firstName;
+  if (!payload.email || !payload.otp) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "please enter email and otp"));
   }
 
-  agent.accountDetails.founderOrCeo.email = payload.email;
-  agent.emailOtp = undefined;  // Clear OTP
-  agent.otpExpiry = undefined; // Clear expiry
-  await agent.save();
-  }
-  else {
+  if (req.user.role === "2") {
+    const agent = await Agent.findById(req.user.id);
+    if (!agent) {
+      return res.status(404).json(new ApiResponse(404, {}, "Agent not found"));
+    }
+
+    if (agent.emailOtp !== payload.otp || agent.otpExpiry < Date.now()) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Invalid or expired OTP"));
+    }
+
+    oldEmail = agent.accountDetails.founderOrCeo.email;
+    agent.emailOtp = undefined; // Clear OTP
+    agent.otpExpiry = undefined; // Clear expiry
+    agent.accountDetails.founderOrCeo.email = payload.email;
+    firstName = agent.accountDetails.primaryContactPerson.name;
+    await agent.save();
+  } else {
     const student = await Student.findById(req.user.id);
     if (!student) {
-      return res.status(404).json(new ApiResponse(404, {}, "Student not found"));
+      return res
+        .status(404)
+        .json(new ApiResponse(404, {}, "Student not found"));
     }
 
     if (student.emailOtp !== payload.otp || student.otpExpiry < Date.now()) {
-      return res.status(400).json( new ApiResponse (400, {}, "Invalid or expired OTP" ));
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Invalid or expired OTP"));
     }
 
+    oldEmail = student.email;
+    student.emailOtp = undefined;
+    student.otpExpiry = undefined;
     student.email = payload.email;
-    student.emailOtp = undefined;  
-    student.otpExpiry = undefined; 
+    firstName = student.firstName;
     await student.save();
   }
-   return res.status(200).json(new ApiResponse(200, {}, "Email update successfully"))
-
-})
+  await sendEmail({
+    to: oldEmail,
+    subject: "Your Registered Email Id Has Been Updated",
+    htmlContent: changeRegisteredEmail(firstName, payload.email),
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Email update successfully"));
+});
 
 
 

@@ -90,7 +90,7 @@ export const createTicket = asyncHandler(async (req, res) => {
       const contactData = await Student.findById(student.studentId).select('phone email');
       name = `${student.personalInformation.firstName} ${student.personalInformation.lastName}`.trim();
       userId = student?.stId;
-      phone = contactData?.phone;
+      phone = contactData?.phone?.code + ' ' + contactData?.phone?.number;
       email = contactData?.email;
     }
   }
@@ -430,7 +430,7 @@ export const updateTicketStatus = asyncHandler(async (req, res) => {
   if (createdById.startsWith("AG")) {
     const agent = await Agent.findOne({ _id: ticket.createdBy });
     if (agent) {
-      email = agent.accountDetails.primaryContactPerson.email;
+      email = agent.accountDetails.founderOrCeo.email;
       recipientName = agent.accountDetails.primaryContactPerson.name;
 
       emailTemplate = agentSideTicketApResolved(recipientName, ticket.priorityStatus || "", ticket.ticketType || "", resolvedText || "");
