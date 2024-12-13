@@ -101,7 +101,8 @@ const WithdrawalSchema = new Schema(
       type: String,
       enum: ["courseFee", "gic", "courseFeeAndGic"],
       required: true,
-    }
+    },
+    
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields automatically

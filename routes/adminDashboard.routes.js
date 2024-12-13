@@ -37,8 +37,8 @@ router.route("/total-student-download").get(verifyAdmin, downloadAllStudentsAsCS
 router.route("/total-agent-download").get(verifyAdmin, downloadAllAgentsAsCSV)  
 router.route("/total-application-download").get(verifyAdmin, downloadAllApplicationsAsCSV)
 router.route("/delete-admin-document").patch(verifyAdmin, deleteAdminDocumentByUrl)
-router.route("/delete-agent/:agentId").get(verifyAdmin, deleteAgent)
-router.route("/delete-student/:id").get(verifyAdmin, deleteStudentData);
+router.route("/delete-agent/:agentId").patch(verifyAdmin, deleteAgent)
+router.route("/delete-student/:id").patch(verifyAdmin, deleteStudentData);
 
 
 export default router;

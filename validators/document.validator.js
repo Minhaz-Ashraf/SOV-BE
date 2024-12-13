@@ -9,6 +9,7 @@ export const DocumentUploadSchema = z.object({
 export const adminDocumentSchema = z.object({
   document: z.array(z.string()), 
   studentId: z.string(),
+  documentType: z.string(),
   applicationId: z.string(),
   documentName: z.string().nonempty("Document name is required"),
 });

@@ -122,7 +122,7 @@ const ParentDocumentSchema = new Schema({
 }, { _id: false });
 
 const SiblingDocumentSchema = new Schema({
-    siblingAdharCard: {
+    siblingAadharCard: {
         type:String
     },
     siblingPanCard: {

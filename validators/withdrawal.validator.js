@@ -11,7 +11,7 @@ export const bankDetailsSchema = z.object({
   postalCode: z.string().nonempty("Postal code is required"),
   bankAccountName: z.string().nonempty("Bank account name is required"),
   bankAccountNumber: z.string().nonempty("Bank account number is required"),
-  swiftBicCode: z.string().nonempty("SWIFT/BIC code is required"),
+  swiftBicCode: z.string().optional(),
   iban: z.string().optional(), // Optional IBAN field
 });
 
@@ -20,6 +20,8 @@ export const bankDetailsSchema = z.object({
 export const documentUploadSchema = z.object({
   aadharCard: z.string().nonempty("Aadhar card URL is required"),
   panCard: z.string().nonempty("Pan card URL is required"),
+  parentAadharCard: z.string().optional(),
+  parentPanCard: z.string().optional(),
 });
 
 
