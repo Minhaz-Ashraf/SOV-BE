@@ -125,7 +125,7 @@ Empowering agents to streamline study visa processes</p>
 export const studentOfferLetterApprovedTemp = (firstName, collegeName, country, courseName)=>{
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
-<p>Congratulations! We are excited to inform you that your offer letter from <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program has been approved. <strong> Offer Letter Price </strong> for this  <strong> ${collegeName} </strong> is <strong> 50$ </strong>.
+<p>Congratulations! We are excited to inform you that your offer letter from <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program has been approved.
 </p>
 
 <p>To secure your spot in this program, please proceed with the payment for the offer letter as soon as possible.</p>
@@ -187,7 +187,6 @@ export const agentOfferLetterApproved = (studentId, studentName,  agentFirstName
   <li><strong>College Name:</strong> ${collegeName}</li>
   <li><strong>Course Name:</strong> ${courseName}</li>
   <li><strong>Country:</strong> ${country}</li>
-  <li><strong>Offet Letter Price:</strong> $50</li>
 </ul>
 
 <p>You can now log in to your agent portal and access the approved offer letter. Please follow the next steps, including for payment procedure to the student or any other necessary actions. Our team will contact you.</p>

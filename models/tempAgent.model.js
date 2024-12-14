@@ -95,6 +95,8 @@ const tempAgentSchema = new Schema(
   }
 );
 
+tempAgentSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 });
+
 // Password encryption before saving the agent
 // tempAgentSchema.pre("save", async function (next) {
 //   if (!this.isModified("password")) return next();

@@ -14,7 +14,7 @@ import {
 } from "../validators/auth.validator.js";
 import { generateTokens } from "../utils/genrateToken.js";
 import { generateOtp } from "../utils/commonFuntions.js";
-import { sendAccountCredentials, sendAuthData, sendEmail, sendEmailVerification } from "../utils/sendMail.js";
+import { sendEmail, sendEmailVerification } from "../utils/sendMail.js";
 import { TempStudent } from "../models/tempStudent.model.js";
 import { TempAgent } from "../models/tempAgent.model.js";
 import crypto from 'crypto'; // Import crypto for generating a unique token
@@ -42,7 +42,13 @@ const sentStudentOtp = asyncHandler(async (req, res) => {
   const isAgentExist = await Agent.exists({
     "accountDetails.founderOrCeo.email": payload.email,
   });
-  if (findTempStudent || findStudent || isAgentExist) {
+
+  if(findTempStudent){
+    return res
+     .status(409)
+     .json(new ApiResponse(409, {}, "Try Signing up again in 1 min"));
+  }
+  if (findStudent || isAgentExist) {
     return res
       .status(409)
       .json(new ApiResponse(409, {}, "Email is already in use"));
@@ -145,8 +151,14 @@ const sendAgentOtp = asyncHandler(async (req, res) => {
   const isAgentExist = await Agent.exists({
     "accountDetails.founderOrCeo.email": payload.accountDetails.founderOrCeo.email,
   });
+
+  if(findTempAgent){
+    return res
+     .status(409)
+     .json(new ApiResponse(409, {}, "Try Signing up again in 1 min"));
+  }
   
-  if (findTempAgent || findStudent || isAgentExist) {
+  if (findStudent || isAgentExist) {
     return res.status(409).json(new ApiResponse(409, {}, "Email is already in use"));
   }
 

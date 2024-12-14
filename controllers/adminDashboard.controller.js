@@ -1899,7 +1899,7 @@ const updatePageStatus = asyncHandler(async (req, res) => {
    }
      
   }
-  if (status === "completed" && oldStatus === "requestedForReapproval") {
+  if (status === "completed") {
     await restoreDeletedStatus(id, type, session);
   }
 
@@ -2317,7 +2317,15 @@ const getAllStudentApplications = asyncHandler(async (req, res) => {
         agentId: { $first: "$agentId" },
         studentId: { $first: "$studentId" },
         personalInformation: { $first: "$personalInformation" },
-        institutionCount: { $sum: 1 },
+        institutionCount:{
+          $sum: {
+            $sum: [
+              { $cond: [{ $ifNull: ["$statusCounts.offerLetterStatus", false] }, 1, 0] },
+              { $cond: [{ $ifNull: ["$statusCounts.courseFeeApplicationStatus", false] }, 1, 0] },
+              { $cond: [{ $ifNull: ["$statusCounts.visaStatus", false] }, 1, 0] },
+            ],
+          },
+        },
         underReviewCount: {
           $sum: {
             $sum: [
@@ -2330,12 +2338,10 @@ const getAllStudentApplications = asyncHandler(async (req, res) => {
         approvedCount: {
           $sum: {
             $sum: [
-              { $cond: [{ $eq: ["$offerLetter.status", "approved"] }, 1, 0] },
-              { $cond: [{ $eq: ["$offerLetter.status", "approvedbyembassy"] }, 1, 0] },
-              { $cond: [{ $eq: ["$courseFeeApplication.status", "approved"] }, 1, 0] },
-              { $cond: [{ $eq: ["$courseFeeApplication.status", "approvedbyembassy"] }, 1, 0] },
-              { $cond: [{ $eq: ["$visa.status", "approved"] }, 1, 0] },
-              { $cond: [{ $eq: ["$visa.status", "approvedbyembassy"] }, 1, 0] },
+              { $cond: [{ $eq: ["$statusCounts.offerLetterStatus", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$statusCounts.courseFeeApplicationStatus", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$statusCounts.visaStatus", "approved"] }, 1, 0] },
+              { $cond: [{ $eq: ["$statusCounts.visaStatus", "approvedbyembassy"] }, 1, 0] },
             ],
           },
         },

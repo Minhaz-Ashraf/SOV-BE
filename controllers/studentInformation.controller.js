@@ -849,13 +849,13 @@ const deleteStudentData = asyncHandler(async (req, res) => {
       firstName = studentInfo.personalInformation.firstName;
       email = studentInfo.personalInformation.email;
       await Institution.updateMany(
-        { userId: studentInfo.agentId }, //agent_id
+        { studentInformationId : studentInfo._id }, //studentInformation_id
         { $set : { deleted: true } },
         { session }
       );
   
       await Withdrawal.updateMany(
-        { userId : studentInfo?.agentId }, //agent_id
+        { userId : studentInfo?.studentId }, //student_id
         { $set : { deleted: true } },
         { session }
       );

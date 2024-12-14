@@ -1,8 +1,11 @@
 import { adminDocument } from "../models/adminDocument.model.js";
+import { Agent } from "../models/agent.model.js";
 import { Institution } from "../models/institution.model.js";
 import { StudentInformation } from "../models/studentInformation.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { studentEmbassyVisaApprovedTemp, studentEmbassyVisaRejectedTemp, visaAgentEmbassyApplicationApproved, visaAgentEmbassyApplicationRejected } from "../utils/mailTemp.js";
+import { sendEmail } from "../utils/sendMail.js";
 import {
   CourseFeeApplicationSchema,
   GICSchema,
@@ -852,7 +855,7 @@ const editStudentDocument = asyncHandler(async (req, res) => {
 
 const editParentDocument = asyncHandler(async (req, res) => {
   const { applicationId } = req.params; // Extract applicationId from URL parameters
-  const { fatherAadharCard, fatherPanCard, motherAadharCard, motherPanCard, siblingAdharCard, siblingPanCard } =
+  const { fatherAadharCard, fatherPanCard, motherAadharCard, motherPanCard, siblingAadharCard, siblingPanCard } =
     req.body; // Extract fields to be updated from the request body
 
   // Find the Institution by applicationId
@@ -863,28 +866,41 @@ const editParentDocument = asyncHandler(async (req, res) => {
       .json(new ApiResponse(404, {}, "Institution not found."));
   }
 
-  // Update the parentDocument fields
+  if (!institution.courseFeeApplication) {
+    institution.courseFeeApplication = {};
+  }
+  if (!institution.courseFeeApplication.siblingsDocument) {
+    institution.courseFeeApplication.siblingsDocument = {};
+  }
+  if (!institution.courseFeeApplication.parentDocument) {
+    institution.courseFeeApplication.parentDocument = {};
+  }
 
-  if (siblingAdharCard && siblingPanCard) {
-    institution.courseFeeApplication.siblingsDocument.siblingAdharCard =
-      siblingAdharCard ||
-      institution.courseFeeApplication.siblingsDocument.siblingAdharCard;
+  // Update sibling documents and remove parent documents if sibling data is provided
+  if (siblingAadharCard || siblingPanCard) {
+    // Set sibling document
+    institution.courseFeeApplication.siblingsDocument.siblingAadharCard =
+      siblingAadharCard || institution.courseFeeApplication.siblingsDocument.siblingAadharCard;
     institution.courseFeeApplication.siblingsDocument.siblingPanCard =
-      siblingPanCard ||
-      institution.courseFeeApplication.siblingsDocument.siblingPanCard;
-  } else {
+      siblingPanCard || institution.courseFeeApplication.siblingsDocument.siblingPanCard;
+
+    // Set parent document fields to null if sibling information is provided
+    institution.courseFeeApplication.parentDocument= {};
+  } else if (fatherAadharCard || fatherPanCard || motherAadharCard || motherPanCard) {
+    // Set parent document
     institution.courseFeeApplication.parentDocument.fatherAadharCard =
-      fatherAadharCard ||
-      institution.courseFeeApplication.parentDocument.fatherAadharCard;
+      fatherAadharCard || institution.courseFeeApplication.parentDocument.fatherAadharCard;
     institution.courseFeeApplication.parentDocument.fatherPanCard =
-      fatherPanCard ||
-      institution.courseFeeApplication.parentDocument.fatherPanCard;
+      fatherPanCard || institution.courseFeeApplication.parentDocument.fatherPanCard;
     institution.courseFeeApplication.parentDocument.motherAadharCard =
-      motherAadharCard ||
-      institution.courseFeeApplication.parentDocument.motherAadharCard;
+      motherAadharCard || institution.courseFeeApplication.parentDocument.motherAadharCard;
     institution.courseFeeApplication.parentDocument.motherPanCard =
-      motherPanCard ||
-      institution.courseFeeApplication.parentDocument.motherPanCard;
+      motherPanCard || institution.courseFeeApplication.parentDocument.motherPanCard;
+
+    // Set sibling document fields to null if parent information is provided
+    institution.courseFeeApplication.siblingsDocument = {};
+  } else {
+    return res.status(400).json(new ApiResponse(400, {}, "No data to update."));
   }
 
   // Save the updated document to the database
@@ -895,6 +911,7 @@ const editParentDocument = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, data, "Parent document updated successfully."));
 });
+
 
 const editOfferLetterAnsPassport = asyncHandler(async (req, res) => {
   const { applicationId } = req.params; // Extract applicationId from URL parameters
@@ -1173,7 +1190,7 @@ const getStudentApplicationInfo = asyncHandler(async (req, res) => {
   const { status, searchQuery } = req.query;
 
   // Base query to filter by student ID
-  let query = { studentInformationId: studentId };
+  let query = { studentInformationId: studentId, deleted : false };
 
   // Add status filter if provided
   if (status) {
@@ -1386,20 +1403,100 @@ const updateVisaDocuments = asyncHandler(async (req, res) => {
 const updateVisaStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const payload = req.body;
-  const updatedInstitution = await Institution.findOneAndUpdate(
-    { _id : id },
-    {
-      $set: {
-        "visa.status": payload.status,
-        "visa.message": payload.message || "",
-      },
-    },
-    { new: true }
-  );
 
-  if (!updatedInstitution) {
-    return res.status(404).json({ error: "Institution not found" });
+  const institution = await Institution.findById(id);
+
+  if (!institution) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "Application not found"));
   }
+  const userId = institution.userId;
+
+  const findAgent = await Agent.findById(userId);
+
+  // Retrieve student's information
+  const studentInfo = await StudentInformation.findOne({
+    _id: institution.studentInformationId,
+  });
+  
+  if (!studentInfo) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "Student information not found"));
+  }
+
+  const studentId = studentInfo.stId || null;
+  const { firstName, email } = studentInfo.personalInformation;
+  const country = institution?.visa?.country;
+    switch (payload.status) {
+  
+      case "approvedbyembassy":
+        // Email to student
+        await sendEmail({
+          to: email,
+          subject: "Visa Approved by Embassy",
+          htmlContent: studentEmbassyVisaApprovedTemp(firstName, country),
+        });
+  
+        // Email to agent (if available)
+        if (findAgent) {
+          const temp = visaAgentEmbassyApplicationApproved(
+            findAgent.accountDetails.primaryContactPerson.name,
+            country,
+            firstName,
+            studentId,
+          );
+          await sendEmail({
+            to: findAgent.accountDetails.founderOrCeo.email,
+            subject: "Visa Approved by Embassy for Further Action",
+            htmlContent: temp,
+          });
+        }
+        break;
+  
+      case "rejectedbyembassy":
+        // Email to student
+        await sendEmail({
+          to: email,
+          subject: "Visa Rejected by Embassy",
+          htmlContent: studentEmbassyVisaRejectedTemp(firstName, country, payload.message),
+        });
+  
+        // Email to agent (if available)
+        if (findAgent) {
+          const temp = visaAgentEmbassyApplicationRejected(
+            findAgent.accountDetails.primaryContactPerson.name,
+            country,
+            payload.message,
+            firstName,
+            studentId,
+          );
+          await sendEmail({
+            to: findAgent.accountDetails.founderOrCeo.email,
+            subject: "Visa Rejected by Embassy - Action Required",
+            htmlContent: temp,
+          });
+        }
+        break;
+  
+      default:
+        console.log("unknown status")
+    }
+    const updatedInstitution = await Institution.findOneAndUpdate(
+      { _id : id },
+      {
+        $set: {
+          "visa.status": payload.status,
+          "visa.message": payload.message || "",
+        },
+      },
+      { new: true }
+    );
+  
+    if (!updatedInstitution) {
+      return res.status(404).json({ error: "Institution not found" });
+    }
 
   res.status(200).json({
     message: "Visa status updated successfully",

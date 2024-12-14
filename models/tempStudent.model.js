@@ -65,6 +65,7 @@ const tempStudentSchema = new Schema(
 //   this.password = await bcrypt.hash(this.password, 10);
 //   next();
 // });
+tempStudentSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 });
 
 // OTP encryption before saving (optional but can enhance security)
 tempStudentSchema.pre("save", async function (next) {
