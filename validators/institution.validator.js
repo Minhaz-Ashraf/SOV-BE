@@ -126,7 +126,7 @@ const OfferLetterAnsPassportSchema = z.object({
 export const CourseFeeApplicationSchema = z.object({
   personalDetails:PersonalInformationSchema,
   studentDocument: StudentDocumentSchema,
-  parentDocument: ParentDocumentSchema,
+  parentDocument: ParentDocumentSchema.optional(),
   offerLetterAnsPassport: OfferLetterAnsPassportSchema,
   studentInformationId: z.string().nonempty("studentInformationId is required"),
 });
