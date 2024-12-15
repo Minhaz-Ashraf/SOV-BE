@@ -1142,7 +1142,7 @@ const reSubmitApplication = asyncHandler(async (req, res) => {
   const status = "underreview";
 
   // Validate the input
-  if (!section || !["offerLetter", "courseFeeApplication"].includes(section)) {
+  if (!section || !["offerLetter", "courseFeeApplication", "visa"].includes(section)) {
     return res.status(400).json({
       message: "Invalid section. Please provide 'offerLetter' or 'courseFeeApplication'.",
     });
