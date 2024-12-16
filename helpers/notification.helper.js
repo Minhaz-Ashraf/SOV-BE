@@ -28,6 +28,20 @@ export const markAllNotificationsAsSeen = async (recieverId, type) => {
   }
 };
 
+export const deleteAllNotificationsForUser = async (recieverId) => {
+  try {
+    const query = recieverId
+      ? { "recipient.userId": recieverId }
+      : { "recipient.userId": { $exists: false } };
+
+    const result = await Notifications.deleteMany(query);
+
+    console.log(`${result.deletedCount} notifications deleted.`);
+  } catch (error) {
+    console.error("Error deleting notifications:", error);
+  }
+};
+
 export const markNotificationAsRead = async (notificationId) => {
   try {
     const notification = await Notifications.findById(notificationId);

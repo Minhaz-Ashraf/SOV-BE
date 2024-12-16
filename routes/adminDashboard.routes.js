@@ -14,7 +14,7 @@ router.route("/change-application-status/:institutionId").patch(changeApplicatio
 router.route("/all/student-agent-data").get(verifyAdmin, getAllDataAgentStudent)
 router.route("/agent/:id").patch(verifyAdmin, getAllDataAgentStudent)
 router.route("/change-page-status/:id").patch(verifyAdmin, updatePageStatus)
-router.route("/company/:id").get(verifyAdmin, getCompanyData)
+router.route("/company/:id").get( getCompanyData)
 router.route("/student-information/:formId").get(verifyAdmin, getStudentFormById)
 router.route("/application-count").get(verifyAdmin, getTotalApplicationCount)
 router.route("/ticket-count").get(verifyAdmin, getTotalTicketCount)

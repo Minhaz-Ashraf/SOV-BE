@@ -1,6 +1,6 @@
 import { Server as SocketIO } from "socket.io";
 import { decryptData } from "../utils/EncryptionUtility.js";
-import { createNotification, getNotificationsForAdmin, getNotificationsForUser, markAllNotificationsAsSeen, markNotificationAsRead, deleteNotificationsForUser, countUnseenForUser, countUnseenForAdmin } from "../helpers/notification.helper.js";
+import { createNotification, getNotificationsForAdmin, getNotificationsForUser, markAllNotificationsAsSeen, markNotificationAsRead, deleteNotificationsForUser, countUnseenForUser, countUnseenForAdmin, deleteAllNotificationsForUser } from "../helpers/notification.helper.js";
 
 class SocketService {
   constructor() {
@@ -206,7 +206,8 @@ class SocketService {
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
         .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
-        // console.log("Notification data from admin to agent:", notification);
+        emitOnMessage(socket, "NOTIFICATION_SEEN_BY_ADMIN", "status seen updated successfully for admin");
+        // console.log("NOTIFICATION_SEEN_BY_ADMIN:", notification);
       });
 
       socket.on("NOTIFICATION_SEEN_BY_USER", async () => {
@@ -215,7 +216,8 @@ class SocketService {
         // this.socketServer
         // .to(`USER_${decryptedDetails._id}`)
         // .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
-        console.log("Notification data from admin to agent:", notification);
+        emitOnMessage(socket, "NOTIFICATION_SEEN_BY_USER", "status seen updated successfully for user");
+        // console.log("NOTIFICATION_SEEN_BY_USER:", notification);
       });
       socket.on("NOTIFICATION_ALL_READ_BY_ADMIN", async () => {
         // update seen status
@@ -223,7 +225,8 @@ class SocketService {
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
         .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
-        // console.log("Notification data from admin to agent:", notification);
+        emitOnMessage(socket, "NOTIFICATION_ALL_READ_BY_ADMIN", "status all read updated successfully for admins");
+        // console.log("Notification all read for admin:", notification);
       });
 
       socket.on("NOTIFICATION_ALL_READ_BY_USER", async () => {
@@ -232,7 +235,8 @@ class SocketService {
         // this.socketServer
         // .to(`USER_${decryptedDetails._id}`)
         // .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
-        console.log("Notification data from admin to agent:", notification);
+        emitOnMessage(socket, "NOTIFICATION_ALL_READ_BY_USER", "status all read updated successfully for user");
+        // console.log("Notification all read for user:", notification);
       });
 
       socket.on("NOTIFICATION_IS_READ", async (notificationData) => {
@@ -257,13 +261,24 @@ class SocketService {
         const notification = await deleteNotificationsForUser(notificationId)
         this.socketServer
         .emit("DELETE_NOTIFICATION", "deleted successfully");
-        console.log("Notification data from admin to agent:", notification);
+        console.log("delete single notification:", notification);
+      });
+      socket.on("DELETE_ALL_NOTIFICATION", async (reciverId, type) => {
+        let notification;
+        if(type === "emitForUser"){
+          notification = await deleteAllNotificationsForUser(reciverId);
+        }else {
+          notification = await deleteAllNotificationsForUser(undefined);
+        }
+        this.socketServer
+        .emit("DELETE_ALL_NOTIFICATION", "deleted successfully");
+        console.log("delete all notifications:", notification);
       });
 
       socket.on("DELETE_AUTH_TOKEN", async (data) => {
         const { reason, userId } = data;
         this.socketServer.to(`USER_${userId}`).emit("DELETE_AUTH_TOKEN", reason);
-        console.log("to the agent/student for tocken deletion", reason);
+        console.log("to the agent/student for token deletion", reason);
       });
 
     });

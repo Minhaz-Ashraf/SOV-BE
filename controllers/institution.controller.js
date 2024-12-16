@@ -420,6 +420,7 @@ const applicationOverview = asyncHandler(async (req, res) => {
   // Step 1: Build the dynamic search query
   let matchCondition = {
     "studentInfo.agentId": req.user.id,
+    deleted: false,
   };
 
   // Use a regular expression to search all relevant fields in studentInfo
