@@ -63,14 +63,14 @@ const adminEmails = process.env.ADMIN_EMAIL?.split(',');
     const studentName = studentInfo.personalInformation.firstName;
     const studentId = studentInfo.stId;
 
-    // const emailContent = withdrawalRequestAdmin( studentName, studentId, withdrawalDetails.appliedFor );
-    // adminEmails?.map(async (adminEmail) =>{
-    //   await sendEmail({
-    //     to: adminEmail,
-    //     subject: `Withdrawal Request - Action Required`,
-    //     htmlContent: emailContent,
-    //   });
-    // })
+    const emailContent = withdrawalRequestAdmin( studentName, studentId, withdrawalDetails.appliedFor );
+    adminEmails?.map(async (adminEmail) =>{
+      await sendEmail({
+        to: adminEmail,
+        subject: `Withdrawal Request - Action Required`,
+        htmlContent: emailContent,
+      });
+    })
   
     if (existingWithdrawal) {
       // Update the existing withdrawal record

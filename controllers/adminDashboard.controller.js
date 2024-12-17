@@ -2223,11 +2223,11 @@ const deleteAgent = asyncHandler(async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    await sendEmail({
-      to: email,
-      subject: "Your Account Has Been Deleted – Further Action Required",
-      htmlContent: accountDeletedSuccessfully(firstName, userId),
-    });
+    // await sendEmail({
+    //   to: email,
+    //   subject: "Your Account Has Been Deleted – Further Action Required",
+    //   htmlContent: accountDeletedSuccessfully(firstName, userId),
+    // });
 
     return res
       .status(200)
