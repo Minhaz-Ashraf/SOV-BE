@@ -2101,7 +2101,7 @@ const getAllAgent = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        _id: 1,
+        _id:  "$agentId",
         agentId: "$agentId",
         id: "$agentId",
         agId: "$agId",
