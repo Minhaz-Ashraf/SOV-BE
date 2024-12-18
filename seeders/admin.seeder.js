@@ -11,12 +11,12 @@ import { Admin } from "../models/admin.model.js";
 
     // Define admin data
     const adminData = {
-      profilePicture: "https://example.com/profile.jpg", 
-      firstName: "John",
-      lastName: "Doe",
+      profilePicture: "", 
+      firstName: "Slashify",
+      lastName: "Tech",
       dob: "1990-05-10", 
-      email: "admin@example.com",
-      password: "adminpassword",
+      email: "theslashifytech@gamil.com",
+      password: "slashifytech0023",
       phone: "+12345445467890",
       role: "0"
     };

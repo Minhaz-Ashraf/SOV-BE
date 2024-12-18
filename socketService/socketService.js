@@ -264,7 +264,6 @@ class SocketService {
         console.log("delete single notification:", notification);
       });
       socket.on("DELETE_ALL_NOTIFICATION", async (reciverId, type) => {
-        console.log(reciverId, type)
         let notification;
         if(type === "emitForUser"){
           notification = await deleteAllNotificationsForUser(reciverId);

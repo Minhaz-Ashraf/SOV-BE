@@ -2072,54 +2072,51 @@ const getAllAgent = asyncHandler(async (req, res) => {
   const search = req.query.search || "";
   const isApproved = req.query.isApproved;
 
-  // Step 1: Find Company records matching `agId` search if provided
-  const companyFilter = search
-    ? { agId: { $regex: search, $options: "i" }, deleted: false }
-    : {deleted: false};
+  const pipeline = [
+    {
+      $match: {
+        deleted: false,
+        ...(isApproved && { "pageStatus.status": "completed" }),
+      },
+    },
+    {
+      $lookup: {
+        from: "agents",
+        localField: "agentId",
+        foreignField: "_id",
+        as: "agentData",
+      },
+    },
+    { $unwind: { path: "$agentData", preserveNullAndEmptyArrays: true } },
 
-  if(isApproved){
-    companyFilter["pageStatus.status"] = "completed";
-  }
-  const matchingCompanies = await Company.find(companyFilter).select("agentId").lean();
-  const matchingAgentIds = matchingCompanies.map((company) => company.agentId);
+    {
+      $match: {
+        $or: [
+          { "primaryContact.firstName": { $regex: search, $options: "i" } },
+          { "agentData.accountDetails.founderOrCeo.email": { $regex: search, $options: "i" } },
+          { "agentData.accountDetails.founderOrCeo.phone": { $regex: search, $options: "i" } },
+          { "agId": { $regex: search, $options: "i" } },
+        ],
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        agentId: "$agentId",
+        id: "$agentId",
+        agId: "$agId",
+        name: "$primaryContact.firstName",
+        email: "$agentData.accountDetails.founderOrCeo.email",
+        phone: "$agentData.accountDetails.founderOrCeo.phone",
+      },
+    },
+    { $skip: skip },
+    { $limit: limit },
+  ];
 
-  // Step 2: Build search filter for `Agent` based on name, email, or matching agent IDs from `Company`
-  const agentFilter = {
-    $or: [
-      { "accountDetails.primaryContactPerson.name": { $regex: search, $options: "i" } },
-      { "accountDetails.founderOrCeo.email": { $regex: search, $options: "i" } },
-      { "accountDetails.founderOrCeo.phone": { $regex: search, $options: "i" } },
-      { _id: { $in: matchingAgentIds } }, // Add this to filter by matching agent IDs from Company
-    ],
-  };
+  const agents = await Company.aggregate(pipeline);
 
-  if(isApproved){
-    agentFilter["_id"] = { $in: matchingAgentIds };
-  }
-
-  // Step 3: Find agents matching the combined search criteria
-  const agents = await Agent.find(agentFilter)
-    .select("accountDetails.primaryContactPerson accountDetails.founderOrCeo")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
-
-  // Step 4: Populate agId for each agent by looking up in the `Company` collection
-  const agentData = await Promise.all(
-    agents.map(async (agent) => {
-      const company = await Company.findOne({ agentId: agent._id }).select("agId primaryContact").lean();
-      return {
-        name: company?.primaryContact?.firstName || "",
-        email: agent.accountDetails.founderOrCeo.email,
-        phone: agent.accountDetails.founderOrCeo.phone,
-        id: agent._id || null,
-        agId: company?.agId || null,
-      };
-    })
-  );
-
-  const totalAgents = await Agent.countDocuments(agentFilter);
+  const totalAgents = await Company.countDocuments(pipeline);
   const totalPages = Math.ceil(totalAgents / limit);
 
   const pagination = {
@@ -2134,7 +2131,7 @@ const getAllAgent = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       {
-        agents: agentData,
+        agents: agents,
         pagination,
       },
       "Agents retrieved successfully"
