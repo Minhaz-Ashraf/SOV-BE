@@ -1573,6 +1573,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
     totalStudents,
     totalPages,
     totalStudentPages,
+    totalUsers: Number(totalCompanies) + Number(totalStudents) || 0,
     currentPage: page,
   });
 });
@@ -1762,6 +1763,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
     totalStudents,
     totalPages,
     totalStudentPages,
+    totalUsers: Number(totalCompanies) + Number(totalStudents) || 0,
     currentPage: page,
   });
 });
@@ -1824,6 +1826,7 @@ const getStudentById = asyncHandler(async (req, res) => {
 const updatePageStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status, message, type } = req.body; // Extracting status, message, and type from the request body
+  const tokenUser = req.user;
 
   // Validate status
   const validStatuses = [
@@ -1880,6 +1883,9 @@ const updatePageStatus = asyncHandler(async (req, res) => {
     status,
     message: message || "", 
   };
+  if(tokenUser.role === "1"){
+    document.teamId = tokenUser._id;
+  }
 
   let email;
   if(type === 'company') {

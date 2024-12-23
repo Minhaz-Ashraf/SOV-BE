@@ -26,7 +26,7 @@ export const restoreDeletedStatus = async (id, type, session) => {
       }
 
       const institutionUpdateResult = await Institution.updateMany(
-        { userId: studentInfo.studentId },
+        { studentInformationId: studentInfo._id },
         { $set: { deleted: false } },
         { session }
       );
