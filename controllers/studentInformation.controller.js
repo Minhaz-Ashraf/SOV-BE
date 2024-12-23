@@ -724,7 +724,7 @@ const getStudentFormById = asyncHandler(async (req, res) => {
   if (req.user.role === "3") {
     getFormId = studentInformation._id;
   }
-  if (req.user.role === "2" || req.user.role === "0") {
+  if (req.user.role === "2" || req.user.role === "0" || req.user.role === "1"  ) {
     studentInformation = await StudentInformation.findById(formId);
   }
 

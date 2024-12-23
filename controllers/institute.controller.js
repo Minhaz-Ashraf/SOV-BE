@@ -5,9 +5,77 @@ import path from "path";
 import fs from "fs";
 import { parse as json2csv } from "json2csv";
 import { fileURLToPath } from "url";
+import { CountryList } from "../models/country.model.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+const getInstitutes = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, instituteName, country } = req.query;
+
+  let matchQuery = {};
+
+  if (instituteName) {
+    const regex = new RegExp(instituteName, "i");
+    matchQuery.instituteName = regex;
+  }
+
+  if (country) {
+    const regex = new RegExp(country, "i");
+    matchQuery.country = regex;
+  }
+
+  const allInstitutes = await Institute.aggregate([
+    { $match: matchQuery }, 
+    {
+      $facet: {
+        totalCount: [{ $count: "count" }],
+        data: [{ $skip: (page - 1) * limit }, { $limit: parseInt(limit) }],
+      },
+    },
+  ]);
+
+  const totalRecords = allInstitutes[0]?.totalCount[0]?.count || 0;
+  const institutes = allInstitutes[0]?.data || [];
+  const totalPages = Math.ceil(totalRecords / limit);
+  const currentPage = parseInt(page);
+  const prevPage = currentPage > 1 ? currentPage - 1 : null;
+  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+
+  if (!institutes.length) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "No institutes found"));
+  }
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        totalRecords,
+        totalPages,
+        currentPage,
+        prevPage,
+        nextPage,
+        hasPreviousPage: prevPage !== null,
+        hasNextPage: nextPage !== null,
+        institutes,
+      },
+      "Institutes fetched successfully"
+    )
+  );
+});
+
+const getInstituteById = asyncHandler(async (req, res) => {
+  const {instituteId} = req.query;
+
+  const institutes = await Institute.findById({_id: instituteId});
+
+  if (!institutes || institutes.length === 0) {
+    return res.status(404).json(new ApiResponse(404, [], "No institutes found"));
+}
+  return res.status(200).json(new ApiResponse(200, institutes, "Institutes fetched successfully"));
+});
 
 const getAllInstitute = asyncHandler(async (req, res) => {
   const { instituteName, country, sortOrder = 'asc' } = req.query;
@@ -35,8 +103,9 @@ const getAllInstitute = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, institutes, "Institutes fetched successfully"));
 });
 
+
 const addInstitute = asyncHandler(async(req, res)=>{
-    const { instituteName, country, instituteImg, offerLetterPrice, aboutCollegeOrInstitute, keyHighlights, popularCourses, admissionAndFacilities } = req.body;
+    const { instituteName, country, instituteImg, offerLetterPrice, aboutCollegeOrInstitute, keyHighlights, popularCourses, admissionAndFacilities, requirements } = req.body;
 
     if (!instituteName || !country) {
       return res.status(400).json({
@@ -53,19 +122,29 @@ const addInstitute = asyncHandler(async(req, res)=>{
       aboutCollegeOrInstitute,
       keyHighlights,
       popularCourses,
-      admissionAndFacilities
+      admissionAndFacilities,
+      requirements
     });
 
     await institute.save();
+    let message = "Institute added successfully";
 
+    const countryData = await CountryList.findOne({});;
+    console.log(countryData);
+    if (countryData && !countryData.preferredCountry?.includes(country)){
+      countryData.preferredCountry.push(country);
 
-    return res.status(200).json(new ApiResponse(200, institute, "Institute added successfully"))
+      console.log(countryData.preferredCountry);
+      await countryData.save();
+      message = "Institute added successfully and country preference updated";
+    }
 
+    return res.status(200).json(new ApiResponse(200, institute, message))
 })
 
 const editInstitute = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { instituteName, country } = req.body;
+    const { instituteName, country, requirements } = req.body;
   
     if (!instituteName || !country) {
       return res.status(400).json({
@@ -76,7 +155,7 @@ const editInstitute = asyncHandler(async (req, res) => {
   
     const updatedInstitute = await Institute.findByIdAndUpdate(
       id,
-      { instituteName, country },
+      { instituteName, country, requirements },
       { new: true, runValidators: true }
     );
   
@@ -86,9 +165,17 @@ const editInstitute = asyncHandler(async (req, res) => {
         message: "Institute not found",
       });
     }
+    let message = "Institute updated successfully";
+
+    const countryData = await CountryList.findOne({})
+    if (countryData && !countryData.preferredCountry?.includes(country)){
+      countryData.preferredCountry.push(country);
+      await countryData.save();
+      message = "Institute updated successfully and country preference updated";
+    }
   
     return res.status(200).json(
-      new ApiResponse(200, updatedInstitute, "Institute updated successfully")
+      new ApiResponse(200, updatedInstitute, message)
     );
   });
 
@@ -170,4 +257,4 @@ const editInstitute = asyncHandler(async (req, res) => {
     }
   });
 
-export { getAllInstitute, addInstitute, editInstitute, deleteInstitute, downloadAllInstitutesAsCSV };
+export { getAllInstitute, addInstitute, editInstitute, deleteInstitute, downloadAllInstitutesAsCSV, getInstituteById, getInstitutes };

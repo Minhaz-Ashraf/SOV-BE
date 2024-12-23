@@ -127,6 +127,7 @@ class SocketService {
           pathData: pathData || {},
           routePath: path
         };
+        
         const createdNotification = await createNotification(formattedNotification);
         this.socketServer
         .to(`USER_${recieverId}`)

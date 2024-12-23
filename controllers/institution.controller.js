@@ -1289,6 +1289,9 @@ const createInstitutionVisa = asyncHandler(async (req, res) => {
       certificate: payload.certificate,
       country: payload.country,
       status: "underreview",
+      lor : payload.lor,
+      sop : payload.sop,
+      blockedaccount : payload.blockedaccount
     },
   };
 
@@ -1380,6 +1383,9 @@ const updateVisaDocuments = asyncHandler(async (req, res) => {
         "visa.pcc": updates.pcc,
         "visa.pal": updates.pal,
         "visa.certificate": updates.certificate,
+        "visa.lor": updates.lor,
+        "visa.sop": updates.sop,
+        "visa.blockedaccount": updates.blockedaccount
       },
     },
     { new: true, runValidators: true }

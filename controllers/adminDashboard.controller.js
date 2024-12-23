@@ -422,15 +422,25 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   const tokenUser = req.user;
+  const {teamId} = req.params;
   let query = {};
+  console.log(tokenUser)
   const andConditions = [];
-   if (tokenUser.role === "1") {
+
+  if(!teamId && !tokenUser){
+    return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+  }
+
+  if (tokenUser.role === "1") {
     query = {teamId : tokenUser._id};
+  }
+  if(teamId){
+    query = {teamId : teamId};
   }
 
   // Handle status filter for both offerLetter and gic
   if (req.query.status) {
-    const validStatuses = ["completed", "rejected", "approved"];
+    const validStatuses = ["underreview", "completed", "rejected", "approved"];
     if (!validStatuses.includes(req.query.status)) {
       return res
         .status(400)
@@ -442,6 +452,7 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
       $or: [
         { "offerLetter.status": req.query.status },
         { "courseFeeApplication.status": req.query.status },
+        { "visa.status": req.query.status },
       ],
     });
   }
@@ -455,6 +466,9 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
         { "courseFeeApplication.personalDetails.fullName": regex },
         { "offerLetter.personalInformation.phoneNumber": regex },
         { "courseFeeApplication.personalDetails.phoneNumber": regex },
+        { "visa.personalInformation.phoneNumber": regex },
+        { "visa.personalDetails.phoneNumber": regex },
+        { "visa.country": regex },
         { "offerLetter.preferences.institution": regex },
         { "offerLetter.preferences.country": regex },
         { applicationId: regex },
@@ -482,16 +496,17 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
     .select("-__v") // Exclude __v field
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit)
+    .limit(limit + 1)
     .lean();
 
   const totalApplications = await Institution.countDocuments(query);
-
+   console.log(query)
   // Transform applications and consolidate agent/student fetches
   const transformedApplications = await Promise.all(
     applications.map(async (app) => {
       const userId = app.userId;
       const userType = app.studentInformationId ? "student" : "agent";
+      const studentMongooseId = app.studentInformationId;
 
       const result = {
         userId,
@@ -501,6 +516,8 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
         status: null,
         message: null,
         agentName: null,
+        institution: null,
+        studentInformationId: studentMongooseId
       };
 
       // Fetch agent or student data
@@ -524,12 +541,14 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
       }
 
       if (findAgent) {
-        const agentData = await Agent.findById(userId.toString());
+        const agentData = await Company.findOne({agentId: userId});
         if (agentData) {
           result.agentName =
-            agentData.accountDetails?.primaryContactPerson?.name || null;
+            agentData.primaryContact?.firstName || null;
         }
       }
+      const studentData = await StudentInformation.findOne({ _id: studentMongooseId }).lean()
+      result.studentId = studentData ? studentData.stId : null;
 
       // Check offerLetter and gic status
       if (app.offerLetter?.personalInformation) {
@@ -537,11 +556,18 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
         result.type = "offerLetter";
         result.status = app.offerLetter.status;
         result.message = app.offerLetter.message;
+        result.institution = app.offerLetter.preferences.institution;
       } else if (app.courseFeeApplication?.personalDetails) {
         result.fullName = app.courseFeeApplication.personalDetails.fullName;
         result.type = "courseFeeApplication";
         result.status = app.courseFeeApplication.status;
         result.message = app.courseFeeApplication.message;
+      } else if (app.visa?.personalDetails) {
+        result.fullName = app.visa.personalDetails.fullName;
+        result.country = app.visa.country;
+        result.type = "visa";
+        result.status = app.visa.status;
+        result.message = app.visa.message;
       }
 
       return result.fullName ? result : null;
@@ -895,8 +921,10 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
   // console.log(studentInfo, "=======")
   const studentId = studentInfo.stId || null;
   const { firstName, email } = studentInfo.personalInformation;
-  const { country, course } = institution.offerLetter.preferences;
-  const collegeName = institution.offerLetter.preferences.institution; // Assuming this is the correct field for college name
+  const country = institution?.offerLetter?.preferences?.country || "";
+  const course = institution?.offerLetter?.preferences?.course || "";
+  const collegeName = institution?.offerLetter?.preferences?.institution || ""; // Assuming this is the correct field for college name
+
   if (section === "offerLetter") {
     if (status == "approved") {
       institution.offerLetter.status = status;
@@ -974,7 +1002,7 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
       );
       await sendEmail({
         to: email,
-        subject: "Your Offer Letter is Approved Proceed with Payment",
+        subject: " Course Fee Application Approved ",
         htmlContent: temp,
       });
       if (findAgent) {
@@ -985,7 +1013,7 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         );
         await sendEmail({
           to: findAgent.accountDetails.founderOrCeo.email,
-          subject: `Offer Letter Approved for Proceed with Next Steps`,
+          subject: ` Course Fee Application Approved `,
           htmlContent: temp,
         });
       }
@@ -996,7 +1024,7 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
       );
       await sendEmail({
         to: email,
-        subject: "Your Offer Letter is Approved Proceed with Payment",
+        subject: "Course Fee Application Rejected – Action Required",
         htmlContent: temp,
       });
       if (findAgent) {
@@ -1008,7 +1036,7 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         );
         await sendEmail({
           to: findAgent.accountDetails.founderOrCeo.email,
-          subject: `Offer Letter Rejected for Action Required`,
+          subject: `Course Fee Application Rejected – Action Required`,
           htmlContent: temp,
         });
       }
@@ -1024,22 +1052,22 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         // Email to student
         await sendEmail({
           to: email,
-          subject: "Visa Application Approved",
-          htmlContent: studentVisaApprovedTemp(firstName, country),
+          subject: "Visa Lodgment Application Approved",
+          htmlContent: studentVisaApprovedTemp(firstName, institution?.visa?.country || ""),
         });
   
         // Email to agent (if available)
         if (findAgent) {
           const temp = visaAgentApplicationApproved(
             findAgent.accountDetails.primaryContactPerson.name,
-            country,
+            institution?.visa?.country || "",
             message,
             firstName,
             studentId,
           );
           await sendEmail({
             to: findAgent.accountDetails.founderOrCeo.email,
-            subject: "Visa Application Approved for Proceed with Next Steps",
+            subject: "Visa Lodgment Application Approved",
             htmlContent: temp,
           });
         }
@@ -1049,21 +1077,21 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         // Email to student
         await sendEmail({
           to: email,
-          subject: "Visa Approved by Embassy",
-          htmlContent: studentEmbassyVisaApprovedTemp(firstName, country),
+          subject: "Visa Application Approved by Embassy – Congratulations!",
+          htmlContent: studentEmbassyVisaApprovedTemp(firstName, institution?.visa?.country || ""),
         });
   
         // Email to agent (if available)
         if (findAgent) {
           const temp = visaAgentEmbassyApplicationApproved(
             findAgent.accountDetails.primaryContactPerson.name,
-            country,
+            institution?.visa?.country || "",
             firstName,
             studentId,
           );
           await sendEmail({
             to: findAgent.accountDetails.founderOrCeo.email,
-            subject: "Visa Approved by Embassy for Further Action",
+            subject: "Visa Application Approved by Embassy",
             htmlContent: temp,
           });
         }
@@ -1073,22 +1101,22 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         // Email to student
         await sendEmail({
           to: email,
-          subject: "Visa Application Rejected",
-          htmlContent: studentVisaRejectedTemp(firstName, country, message),
+          subject: "Visa Lodgment Application Rejected – Review and Resubmit",
+          htmlContent: studentVisaRejectedTemp(firstName, institution?.visa?.country || "", message),
         });
   
         // Email to agent (if available)
         if (findAgent) {
           const temp = visaAgentApplicationRejected(
             findAgent.accountDetails.primaryContactPerson.name,
-            country,
+            institution?.visa?.country || "",
             message,
             firstName,
             studentId,
           );
           await sendEmail({
             to: findAgent.accountDetails.founderOrCeo.email,
-            subject: "Visa Application Rejected - Action Required",
+            subject: "Visa Lodgment Application Rejected- Action Required",
             htmlContent: temp,
           });
         }
@@ -1098,31 +1126,29 @@ const changeApplicationStatusSubadmin = asyncHandler(async (req, res) => {
         // Email to student
         await sendEmail({
           to: email,
-          subject: "Visa Rejected by Embassy",
-          htmlContent: studentEmbassyVisaRejectedTemp(firstName, country, message),
+          subject: "Visa Application Rejected by Embassy – Actions Required",
+          htmlContent: studentEmbassyVisaRejectedTemp(firstName, institution?.visa?.country || "", message),
         });
   
         // Email to agent (if available)
         if (findAgent) {
           const temp = visaAgentEmbassyApplicationRejected(
             findAgent.accountDetails.primaryContactPerson.name,
-            country,
+            institution?.visa?.country || "",
             message,
             firstName,
             studentId,
           );
           await sendEmail({
             to: findAgent.accountDetails.founderOrCeo.email,
-            subject: "Visa Rejected by Embassy - Action Required",
+            subject: "Visa Application Rejected by Embassy",
             htmlContent: temp,
           });
         }
         break;
   
       default:
-        return res
-          .status(400)
-          .json(new ApiResponse(400, {}, "Invalid visa status provided"));
+        console.log("status provided wont have email procedure applied")
     }
   } else {
     return res
@@ -1558,6 +1584,11 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
   const { search, status, date, userType } = req.query;
 
   const tokenUser = req.user;
+  const {teamId} = req.params;
+
+  if(!teamId && !tokenUser){
+    return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+  }
 
   let formattedAgents = [];
   let formattedStudents = [];
@@ -1589,6 +1620,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
     ...(status ? { "pageStatus.status": status } : {}),
     ...(date && {createdAt : { $gte: startOfDay, $lte: endOfDay }}),
     ...(tokenUser.role === "1" && {teamId : tokenUser._id}),
+    ...(teamId && {teamId : teamId}),
     pageCount: 6,
   };
 
@@ -1606,6 +1638,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
     ...(status ? { "pageStatus.status": status } : {}),
     ...(date && {createdAt : { $gte: startOfDay, $lte: endOfDay }}),
     ...(tokenUser.role === "1" && {teamId : tokenUser._id}),
+    ...(teamId && {teamId : teamId}),
     pageCount: 3,
     deleted: false,
   };
@@ -1618,12 +1651,12 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
   if (userType === "agent" || !userType) {
     agents = await Company.find(searchCondition)
       .select(
-        "primaryContact.firstName primaryContact.lastName agId _id pageStatus.message"
+        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * agentLimit)
       .limit(agentLimit)
-      .lean()
+      .lean();
 
     formattedAgents = agents.map((company) => {
       const { firstName, lastName } = company.primaryContact || {};
@@ -1631,8 +1664,10 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         firstName: firstName || "N/A",
         lastName: lastName || "N/A",
         agId: company.agId,
+        agentId: company.agentId,
         _id: company._id,
         message: company.pageStatus?.message || "",
+        status: company.pageStatus?.status || "",
         type: "agent",
       };
     });
@@ -1645,12 +1680,12 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
   if (userType === "student" || !userType) {
     students = await StudentInformation.find(studentSearchCondition)
       .select(
-        "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message"
+        "personalInformation.firstName personalInformation.lastName stId _id pageStatus"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * studentLimit)
       .limit(studentLimit)
-      .lean()
+      .lean();
 
     formattedStudents = students.map((student) => ({
       firstName: student.personalInformation?.firstName || "N/A",
@@ -1658,14 +1693,14 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       stId: student.stId,
       _id: student._id,
       message: student.pageStatus?.message || "",
+      status: student.pageStatus?.status || "",
       type: "student",
     }));
 
-    totalStudents = await StudentInformation.countDocuments(
-      studentSearchCondition
-    );
+    totalStudents = await StudentInformation.countDocuments(studentSearchCondition);
     totalStudentPages = Math.ceil(totalStudents / studentLimit);
   }
+
   const totalFetched = formattedAgents.length + formattedStudents.length;
   const remainingCount = limit - totalFetched;
   if (remainingCount > 0) {
@@ -1678,7 +1713,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(studentLimit)
         .limit(remainingCount)
-        .lean()
+        .lean();
 
       formattedStudents.push(
         ...additionalStudents.map((student) => ({
@@ -1694,12 +1729,12 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       // Fetch more agents if less students found
       const additionalAgents = await Company.find(searchCondition)
         .select(
-          "primaryContact.firstName primaryContact.lastName agId _id pageStatus.message"
+          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message"
         )
         .sort({ createdAt: -1 })
         .skip(agentLimit)
         .limit(remainingCount)
-        .lean()
+        .lean();
 
       formattedAgents.push(
         ...additionalAgents.map((company) => {
@@ -1708,6 +1743,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
             firstName: firstName || "N/A",
             lastName: lastName || "N/A",
             agId: company.agId,
+            agentId: company.agentId,
             _id: company._id,
             message: company.pageStatus?.message || "",
             type: "agent",

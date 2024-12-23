@@ -19,7 +19,7 @@ export const adminSchema = z.object({
     })
     .optional(),
   email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
+  password: z.string().optional(),
   phone: z
     .string()
     .min(10, "Phone number must be at least 10 digits")

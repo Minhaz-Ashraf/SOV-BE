@@ -30,7 +30,14 @@ const InstituteSchema = new Schema({
   },
   admissionAndFacilities : {
     type: String,
+  },
+  requirements :{
+    type: String,
+  },
+  inTake :{
+    type: String,
   }
+
 }, {
   timestamps: true,  // Automatically add createdAt and updatedAt fields
 });

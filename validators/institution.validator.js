@@ -140,6 +140,9 @@ export const VisaSchema = z.object({
   pcc: z.string().nonempty("PCC is required"),
   pal: z.string().optional(),
   certificate: z.array(z.string()).optional(),
+  lor: z.string().optional(),
+  sop: z.string().optional(),
+  blockedaccount: z.string().optional()
 });
 export const VisaEditSchema = z.object({
   personalDetails: PersonalInformationSchema,

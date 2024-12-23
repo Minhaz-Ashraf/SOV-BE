@@ -252,20 +252,29 @@ export const getAllTicketsSubadmin = asyncHandler(async (req, res) => {
   const limitNumber = parseInt(limit, 10);
 
   const tokenUser = req.user;
+  const {teamId} = req.params;
 
   const query = {deleted : false};
+
+  if(!teamId && !tokenUser){
+    return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+  }
 
   if (tokenUser.role === "1") {
     query.teamId = tokenUser._id;
   }
+  if(teamId){
+    query.teamId = teamId;
+  }
+  if (userType) {
+    query.userType = userType;
+  }
+
   if (priorityStatus) {
     query.priorityStatus = priorityStatus;
   }
   if (status) {
     query.status = status;
-  }
-  if (userType) {
-    query.userType = userType;
   }
   if (searchData) {
     query.$or = [
@@ -310,6 +319,7 @@ export const getAllTicketsSubadmin = asyncHandler(async (req, res) => {
   const ticketsData = await Promise.all(
     tickets.map(async (ticket) => {
       return {
+        _id: ticket._id,
         ticketId: ticket.ticketId,
         name: ticket.name || "",
         userType: ticket.userType || "",

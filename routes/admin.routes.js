@@ -18,6 +18,7 @@ router.route("/change-password").post(verifyAdmin, changePassword);
 router.route("/change-email").post(verifyAdmin, changeAdminEmail);
 router.route("/edit-profile").patch(verifyAdmin, editProfile);
 router.route("/profile").get(verifyAdmin, getProfileData);
+router.route("/team-profile/:teamId").get(verifyAdmin, getProfileData);
 router.route("/add-team-member").post(verifyAdmin, addTeamMember);
 router.route("/edit-team-member/:teamID").put(verifyAdmin, editTeamMember);
 router.route("/delete-team-member/:teamID").patch(verifyAdmin, softDeleteTeamMember);

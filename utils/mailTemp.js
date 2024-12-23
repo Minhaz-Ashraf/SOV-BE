@@ -953,6 +953,37 @@ Supporting seamless operations for the portal
 }
 
 
+export const accountUpdatedTeam = (teamMemId, teamMemName, emailId, password, portalLink )=>{
+  return `<p>Dear <strong>${teamMemName}</strong>,</p>
+
+<p>Your account has been updated by the Super Admin, and you are now equipped to handle all portal-related tasks on their behalf.</p>
+<p>Please find your updated account details below:</p>
+
+<p><strong>Account Details:</strong></p>
+<ul>
+<li><strong>Team Member ID:</strong> ${teamMemId} </li>
+<li><strong>Name:</strong> ${teamMemName} </li>
+<li><strong>Email ID:</strong> ${emailId} </li>
+<li><strong>Password:</strong> ${password} </li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>
+</ul>
+<p>You can log in using the credentials provided above to start managing tasks and taking actions on behalf of the Super Admin. </p>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Ensure all actions comply with the guidelines provided by the Super Admin</li>
+</ul>
+
+<p>For any further assistance, feel free to reach out to <a href="mailto:shweta.dhanerwal@sovportal.in">shweta.dhanerwal@sovportal.in</a> or <a href="mailto:jatin.mehta@sovportal.in">jatin.mehta@sovportal.in</a>.</p>
+
+<p>Thank you for being a valuable part of our team!</p>
+<p>Best regards,</p>
+<p><strong>SOV Portal</strong><br>
+Supporting seamless operations for the portal
+</p>`;
+}
+
+
 export const withdrawalSuccessfulStudent = ( studentName, purpose )=>{
   return `<p>Dear <strong>${studentName}</strong>,</p>
 

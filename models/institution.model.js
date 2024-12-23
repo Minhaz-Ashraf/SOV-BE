@@ -216,6 +216,15 @@ const InstitutionSchema = new Schema({
             type: [String],
             default: undefined,
         },
+        lor :{
+            type: String,
+        },
+        sop :{
+            type: String,
+        },
+        blockedaccount : {
+            type: String,
+        },
         type:{
             type: String,
       
@@ -228,7 +237,7 @@ const InstitutionSchema = new Schema({
         },
         status: {
             type: String,
-            enum: ['underreview', 'rejected', 'approved', 'approvedbyembassy','rejectedbyembassy', 'withdrawalrequest', 'visagranted', 'withdrawalcomplete'],  // Valid status values     
+            enum: ['underreview', 'rejected', 'approved', 'approvedbyembassy','rejectedbyembassy', 'withdrawalrequest', 'visagranted', 'withdrawalcomplete', 'deferment'],  // Valid status values     
       
         },
         message: { type: String },

@@ -6,7 +6,8 @@ import { changeEmailSchema, changePasswordSchema, editDataSchema, loginSchema } 
 import bcrypt from "bcrypt";
 import { adminSchema } from "../validators/teamMember.validator.js";
 import { TeamMember } from "../models/team.model.js";
-import { accountCredentialsTeam } from "../utils/mailTemp.js";
+import { accountCredentialsTeam, accountUpdatedTeam } from "../utils/mailTemp.js";
+import { sendEmail } from "../utils/sendMail.js";
 
 async function generateTeamMemberId() {
   const today = new Date();
@@ -41,7 +42,7 @@ const adminLogin = asyncHandler(async (req, res) => {
   }
   let user;
   if(payload.role === "1"){
-    user = await TeamMember.findOne({
+    user = await Admin.findOne({
       email: payload.email.trim().toLowerCase(),
     });
   }else{
@@ -91,6 +92,10 @@ const adminLogin = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async(req, res)=>{
     const payload = req.body;
     const validation = changePasswordSchema.safeParse(payload);
+
+    if(req.user.role !== "0"){
+      return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+    }
   
     if (!validation.success) {
       return res
@@ -132,6 +137,10 @@ const changeAdminEmail = asyncHandler(async(req,res)=>{
     const payload = req.body;
     const validation = changeEmailSchema.safeParse(payload);
   
+    if(req.user.role !== "0"){
+      return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+    }
+
     if (!validation.success) {
       return res
         .status(400)
@@ -169,6 +178,10 @@ const changeAdminEmail = asyncHandler(async(req,res)=>{
 
 const editProfile = asyncHandler(async(req, res)=>{
     const payload = req.body;
+
+    if(req.user.role !== "0"){
+      return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+    }
 
     // Validate the incoming data
     const validation = editDataSchema.safeParse(payload);
@@ -208,7 +221,12 @@ const editProfile = asyncHandler(async(req, res)=>{
 })
 
 const getProfileData = asyncHandler(async(req, res)=>{
-    const id = req.user.id;
+    let id;
+    if(req.params.teamId && req.params.teamId !== ""){
+      id = req.params.teamId;
+    }else {
+      id = req.user.id
+    }
     const user = await Admin.findById(id).select("-password");
      
     if(!user){
@@ -221,19 +239,25 @@ const getProfileData = asyncHandler(async(req, res)=>{
 const addTeamMember = asyncHandler(async(req, res) =>{
   const payload = req.body;
   const validation = adminSchema.safeParse(payload);
+  if(req.user.role !== "0"){
+    return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+  }
   if (!validation.success) {
     return res
       .status(400)
       .json(new ApiResponse(400, {}, validation.error.errors));
   }
   const {
+    residenceAddress,
     firstName,
     lastName,
-    email,
+    gender,
+    maritalStatus,
     dob,
+    email,
     phone,
     profilePicture,
-    residenceAddress,
+    dateOfJoining,
     password,
   } = payload;
 
@@ -244,24 +268,32 @@ const addTeamMember = asyncHandler(async(req, res) =>{
       .json(new ApiResponse(409, {}, "Email already in use"));
   }
   const teamId = await generateTeamMemberId();
+  let hashedPassword;
+
+  if (password) {
+    hashedPassword = password;
+  }
 
   const newTeamMember = new TeamMember({
+    role: "1",
+    password : hashedPassword,
+    teamId,
+    residenceAddress,
     firstName,
     lastName,
-    email,
+    gender,
+    maritalStatus,
     dob,
+    email,
     phone,
     profilePicture,
-    residenceAddress,
-    role: "1",
-    password,
-    teamId,
+    dateOfJoining,
   });
 
   const savedTeamMember = await newTeamMember.save();
 
   const tempemail = accountCredentialsTeam(
-    teamId, firstName, email, password, "https://sovportal.in/"
+    teamId, firstName, email, password, "https://sovportal.in/admin/role/auth/login"
   );
   await sendEmail({
     to: email,
@@ -279,6 +311,10 @@ const editTeamMember = asyncHandler(async (req, res) => {
   const { teamID } = req.params;
   const payload = req.body;
 
+  if(req.user.role !== "0"){
+    return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+  }
+
   // Validate payload against Zod schema
   const validation = adminSchema.safeParse(payload);
   if (!validation.success) {
@@ -288,13 +324,16 @@ const editTeamMember = asyncHandler(async (req, res) => {
   }
 
   const {
+    residenceAddress,
     firstName,
     lastName,
-    email,
+    gender,
+    maritalStatus,
     dob,
+    email,
     phone,
     profilePicture,
-    residenceAddress,
+    dateOfJoining,
     password,
   } = payload;
 
@@ -322,13 +361,25 @@ const editTeamMember = asyncHandler(async (req, res) => {
     if (lastName) existingTeamMember.lastName = lastName;
     if (email) existingTeamMember.email = email.toLowerCase().trim();
     if (dob) existingTeamMember.dob = dob;
+    if (dateOfJoining) existingTeamMember.dateOfJoining = dateOfJoining;
+    if (gender) existingTeamMember.gender = gender;
+    if (maritalStatus) existingTeamMember.maritalStatus = maritalStatus;
     if (phone) existingTeamMember.phone = phone;
     if (profilePicture) existingTeamMember.profilePicture = profilePicture;
     if (residenceAddress) existingTeamMember.residenceAddress = residenceAddress;
 
     if (password) {
-      existingTeamMember.password = await bcrypt.hash(password, 10);
+      existingTeamMember.password = password;
     }
+
+    const tempemail = accountUpdatedTeam(
+      existingTeamMember.teamId, existingTeamMember.firstName, existingTeamMember.email, password, "https://sovportal.in/admin/role/auth/login"
+    );
+    await sendEmail({
+      to: email,
+      subject: `Your Portal Account Data Updated Successfully`,
+      htmlContent: tempemail,
+    });
 
     const updatedTeamMember = await existingTeamMember.save();
 
@@ -336,6 +387,7 @@ const editTeamMember = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, updatedTeamMember, "Team member updated successfully"));
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json(new ApiResponse(500, {}, "An error occurred while updating the team member"));
@@ -344,6 +396,10 @@ const editTeamMember = asyncHandler(async (req, res) => {
 
 const softDeleteTeamMember = asyncHandler(async (req, res) => {
   const { teamID } = req.params;
+
+  if(req.user.role !== "0"){
+    return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
+  }
 
   try {
     const teamMember = await TeamMember.findOne({ _id: teamID });
@@ -390,7 +446,7 @@ const getAllTeamMembers = asyncHandler(async (req, res) => {
     }
 
     const totalTeamMembers = await TeamMember.countDocuments(searchCondition);
-    const totalPages = Math.ceil(totalDocs / limit);
+    const totalPages = Math.ceil(totalTeamMembers / limit);
     const teamMembers = await TeamMember.find(searchCondition)
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -414,9 +470,10 @@ const getAllTeamMembers = asyncHandler(async (req, res) => {
         teamMembers,
       }, "Team members fetched successfully"));
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
-      .json(new ApiResponse(500, {}, "An error occurred while deleting the team member"));
+      .json(new ApiResponse(500, {}, "An error occurred while fetchig all team members"));
   }
 });
 

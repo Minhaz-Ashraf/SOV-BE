@@ -35,8 +35,21 @@ const adminSchema = new Schema(
     },
     isDeleted:{
       type: Boolean,
+      default: false,
+    },
+    gender: {
+      type: String,
       required: false,
-    }
+    },
+    maritalStatus: {
+      type: String,
+      required: false,
+    },
+    dateOfJoining: {
+      type: Date,
+      required: false,
+      default: Date.now(),
+    },
   },
   {
     timestamps: true,

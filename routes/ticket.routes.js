@@ -9,7 +9,7 @@ router.route("/download-all").get( verifyAdmin, downloadAllTicketsAsCSV);
 router.route("/my-tickets").get( verifyJwt, getMyTickets);
 router.route("/ticket/:ticketId").get(  getTicketById);
 router.route("/ticket/:ticketId").patch( verifyAdmin, updateTicketStatus);
-router.route("/sub-admin-tickets").get( verifyAdmin, getAllTicketsSubadmin);
+router.route("/sub-admin-tickets/:teamId").get( verifyAdmin, getAllTicketsSubadmin);
 router.route("/ticket-subadmin/:ticketId").patch( verifyAdmin, updateTicketStatusBySubadmin);
 
 

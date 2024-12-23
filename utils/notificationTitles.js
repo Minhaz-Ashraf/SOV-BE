@@ -48,5 +48,7 @@ export const NOTIFICATION_TITLES = {
     STUDENT_REQUESTED_AMOUNT_WITHDRAWAL: "Student Requested Amount Withdrawal",
     AGENT_STUDENT_VISA_STAMP: "Students by Agent Stamp",
     STUDENT_STUDENT_VISA_STAMP: "Students by Student Stamp",
+    DEFERMATION_BY_AGENT : "",
+    DEFERMATION_BY_STUDENT : ""
   };
   
