@@ -320,6 +320,16 @@ const getAllApplications = asyncHandler(async (req, res) => {
     });
   }
 
+  if (req.query.date) {
+    const exactDate = new Date(req.query.date);
+    const startOfDay = new Date(exactDate.setHours(0,0,0,0));
+    const endOfDay = new Date(exactDate.setHours(23,59,59,999));
+
+    andConditions.push({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    });
+  }
+
   // Apply andConditions if both filters are present
   if (andConditions.length > 0) {
     query.$and = andConditions;
@@ -351,7 +361,8 @@ const getAllApplications = asyncHandler(async (req, res) => {
         message: null,
         agentName: null,
         institution: null,
-        studentInformationId: studentMongooseId
+        studentInformationId: studentMongooseId,
+        createdAt: app.createdAt,
       };
 
       // Fetch agent or student data
@@ -517,7 +528,8 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
         message: null,
         agentName: null,
         institution: null,
-        studentInformationId: studentMongooseId
+        studentInformationId: studentMongooseId,
+        createdAt: app.createdAt,
       };
 
       // Fetch agent or student data
@@ -1463,7 +1475,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
   if (userType === "agent" || !userType) {
     agents = await Company.find(searchCondition)
       .select(
-        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus"
+        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus createdAt"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * agentLimit)
@@ -1480,6 +1492,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
         _id: company._id,
         message: company.pageStatus?.message || "",
         status: company.pageStatus?.status || "",
+        createdAt: company.createdAt,
         type: "agent",
       };
     });
@@ -1492,7 +1505,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
   if (userType === "student" || !userType) {
     students = await StudentInformation.find(studentSearchCondition)
       .select(
-        "personalInformation.firstName personalInformation.lastName stId _id pageStatus"
+        "personalInformation.firstName personalInformation.lastName stId _id pageStatus createdAt"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * studentLimit)
@@ -1506,6 +1519,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
       _id: student._id,
       message: student.pageStatus?.message || "",
       status: student.pageStatus?.status || "",
+      createdAt: student.createdAt,
       type: "student",
     }));
 
@@ -1520,7 +1534,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
       // Fetch more students if less agents found
       const additionalStudents = await StudentInformation.find(studentSearchCondition)
         .select(
-          "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message"
+          "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message createdAt"
         )
         .sort({ createdAt: -1 })
         .skip(studentLimit)
@@ -1534,6 +1548,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
           stId: student.stId,
           _id: student._id,
           message: student.pageStatus?.message || "",
+          createdAt: student.createdAt,
           type: "student",
         }))
       );
@@ -1541,7 +1556,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
       // Fetch more agents if less students found
       const additionalAgents = await Company.find(searchCondition)
         .select(
-          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message"
+          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message createdAt"
         )
         .sort({ createdAt: -1 })
         .skip(agentLimit)
@@ -1558,6 +1573,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
             agentId: company.agentId,
             _id: company._id,
             message: company.pageStatus?.message || "",
+            createdAt: company.createdAt,
             type: "agent",
           };
         })
@@ -1654,7 +1670,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
   if (userType === "agent" || !userType) {
     agents = await Company.find(searchCondition)
       .select(
-        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus"
+        "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus createdAt"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * agentLimit)
@@ -1671,6 +1687,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         _id: company._id,
         message: company.pageStatus?.message || "",
         status: company.pageStatus?.status || "",
+        createdAt: company.createdAt,
         type: "agent",
       };
     });
@@ -1683,7 +1700,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
   if (userType === "student" || !userType) {
     students = await StudentInformation.find(studentSearchCondition)
       .select(
-        "personalInformation.firstName personalInformation.lastName stId _id pageStatus"
+        "personalInformation.firstName personalInformation.lastName stId _id pageStatus createdAt"
       )
       .sort({ createdAt: -1 })
       .skip((page - 1) * studentLimit)
@@ -1697,6 +1714,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       _id: student._id,
       message: student.pageStatus?.message || "",
       status: student.pageStatus?.status || "",
+      createdAt: student.createdAt,
       type: "student",
     }));
 
@@ -1711,7 +1729,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       // Fetch more students if less agents found
       const additionalStudents = await StudentInformation.find(studentSearchCondition)
         .select(
-          "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message"
+          "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message createdAt"
         )
         .sort({ createdAt: -1 })
         .skip(studentLimit)
@@ -1725,6 +1743,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
           stId: student.stId,
           _id: student._id,
           message: student.pageStatus?.message || "",
+          createdAt: student.createdAt,
           type: "student",
         }))
       );
@@ -1732,7 +1751,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       // Fetch more agents if less students found
       const additionalAgents = await Company.find(searchCondition)
         .select(
-          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message"
+          "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message createdAt"
         )
         .sort({ createdAt: -1 })
         .skip(agentLimit)
@@ -1749,6 +1768,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
             agentId: company.agentId,
             _id: company._id,
             message: company.pageStatus?.message || "",
+            createdAt: company.createdAt,
             type: "agent",
           };
         })

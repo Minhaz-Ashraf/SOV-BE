@@ -115,7 +115,7 @@ const addInstitute = asyncHandler(async (req, res) => {
     instituteName,
     country,
     inTake,
-    instituteStatus,
+    status,
     instituteImg,
     offerLetterPrice,
     aboutCollegeOrInstitute,
