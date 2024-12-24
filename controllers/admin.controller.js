@@ -362,7 +362,7 @@ const editTeamMember = asyncHandler(async (req, res) => {
     }
 
     if (payload.email) {
-      const newEmail = payload.email.toLowerCase().trim();
+      const newEmail = payload?.email?.toLowerCase().trim();
       if (newEmail !== existingTeamMember.email) {
         const emailExists = await TeamMember.findOne({ email: newEmail });
         if (emailExists) {
