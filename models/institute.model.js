@@ -40,7 +40,6 @@ const InstituteSchema = new Schema(
     },
     instituteStatus: {
       type: String,
-      enum: ["open", "close"],
     },
   },
   {
