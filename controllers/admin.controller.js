@@ -56,7 +56,7 @@ const adminLogin = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiResponse(404, {}, "User not found"));
   }
   if(user.isDeleted === true) {
-    return res.status(401).json(new ApiResponse(401, {}, "Your Accound Has Been Deleted By Admin"));
+    return res.status(401).json(new ApiResponse(401, {}, "Your Account Has Been Deleted By Admin"));
   }
 
   const isPasswordValid = await user.isPasswordCorrect(payload.password);

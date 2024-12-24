@@ -495,7 +495,7 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
     const endOfDay = new Date(exactDate.setHours(23,59,59,999));
 
     andConditions.push({
-      createdAt: { $gte: startOfDay, $lte: endOfDay },
+      teamActivity: { $gte: startOfDay, $lte: endOfDay },
     });
   }
 
@@ -507,7 +507,7 @@ const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
   // Fetch paginated applications with applied filters
   const applications = await Institution.find(query)
     .select("-__v") // Exclude __v field
-    .sort({ createdAt: -1 })
+    .sort({ teamActivity: -1 })
     .skip(skip)
     .limit(limit + 1)
     .lean();
@@ -1639,7 +1639,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         }
       : {}),
     ...(status ? { "pageStatus.status": status } : {}),
-    ...(date && {createdAt : { $gte: startOfDay, $lte: endOfDay }}),
+    ...(date && {teamActivity : { $gte: startOfDay, $lte: endOfDay }}),
     ...(tokenUser.role === "1" && {teamId : tokenUser._id}),
     ...(teamId && {teamId : teamId}),
     pageCount: 6,
@@ -1658,7 +1658,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         }
       : {}),
     ...(status ? { "pageStatus.status": status } : {}),
-    ...(date && {createdAt : { $gte: startOfDay, $lte: endOfDay }}),
+    ...(date && {teamActivity : { $gte: startOfDay, $lte: endOfDay }}),
     ...(tokenUser.role === "1" && {teamId : tokenUser._id}),
     ...(teamId && {teamId : teamId}),
     pageCount: 3,
@@ -1675,7 +1675,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       .select(
         "primaryContact.firstName primaryContact.lastName agId agentId  _id pageStatus createdAt teamActivity"
       )
-      .sort({ createdAt: -1 })
+      .sort({ teamActivity: -1 })
       .skip((page - 1) * agentLimit)
       .limit(agentLimit)
       .lean();
@@ -1705,7 +1705,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
       .select(
         "personalInformation.firstName personalInformation.lastName stId _id pageStatus createdAt teamActivity"
       )
-      .sort({ createdAt: -1 })
+      .sort({ teamActivity: -1 })
       .skip((page - 1) * studentLimit)
       .limit(studentLimit)
       .lean();
@@ -1734,7 +1734,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         .select(
           "personalInformation.firstName personalInformation.lastName stId _id pageStatus.message createdAt teamActivity"
         )
-        .sort({ createdAt: -1 })
+        .sort({ teamActivity: -1 })
         .skip(studentLimit)
         .limit(remainingCount)
         .lean();
@@ -1756,7 +1756,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
         .select(
           "primaryContact.firstName primaryContact.lastName agId agentId _id pageStatus.message createdAt teamActivity"
         )
-        .sort({ createdAt: -1 })
+        .sort({ teamActivity: -1 })
         .skip(agentLimit)
         .limit(remainingCount)
         .lean();
