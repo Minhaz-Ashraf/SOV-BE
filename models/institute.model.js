@@ -38,7 +38,7 @@ const InstituteSchema = new Schema(
     inTake: {
       type: [String],
     },
-    status: {
+    instituteStatus: {
       type: String,
       enum: ["open", "close"],
     },
