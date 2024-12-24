@@ -245,6 +245,10 @@ const CompanySchema = new Schema({
     ref: "Admin",
     required: false
   },
+  teamActivity:{
+    type: Date,
+    required: false
+  },
   pageCount: {
     type: Number,
     default: 1

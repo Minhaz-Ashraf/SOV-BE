@@ -510,6 +510,7 @@ export const updateTicketStatusBySubadmin = asyncHandler(async (req, res) => {
   }
   if (user?._id) {
     ticket.teamId = user._id;
+    ticket.teamActivity = new Date();
   }
   if (solution) {
     ticket.solutionText = solution;

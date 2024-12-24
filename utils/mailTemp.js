@@ -954,6 +954,9 @@ Supporting seamless operations for the portal
 
 
 export const accountUpdatedTeam = (teamMemId, teamMemName, emailId, password, portalLink )=>{
+
+  const passwordItem = password ? `<li><strong>Password:</strong> ${password}</li>
+  <li><strong>Portal Link:</strong> ${portalLink} </li>` : `<li><strong>Portal Link:</strong> ${portalLink} </li>`;
   return `<p>Dear <strong>${teamMemName}</strong>,</p>
 
 <p>Your account has been updated by the Super Admin, and you are now equipped to handle all portal-related tasks on their behalf.</p>
@@ -964,8 +967,7 @@ export const accountUpdatedTeam = (teamMemId, teamMemName, emailId, password, po
 <li><strong>Team Member ID:</strong> ${teamMemId} </li>
 <li><strong>Name:</strong> ${teamMemName} </li>
 <li><strong>Email ID:</strong> ${emailId} </li>
-<li><strong>Password:</strong> ${password} </li>
-<li><strong>Portal Link:</strong> ${portalLink} </li>
+${passwordItem}
 </ul>
 <p>You can log in using the credentials provided above to start managing tasks and taking actions on behalf of the Super Admin. </p>
 

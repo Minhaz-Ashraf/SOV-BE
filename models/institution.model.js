@@ -257,6 +257,10 @@ const InstitutionSchema = new Schema({
         ref: "Admin",
         required: false
     },
+    teamActivity:{
+        type: Date,
+        required: false
+    },
     userId: {
         type: String,
         required: true

@@ -7,6 +7,10 @@ const TicketSchema = new Schema({
     ref: "Admin",
     required: false
   },
+  teamActivity:{
+    type: Date,
+    required: false
+  },
   ticketType: {
     type: String, 
     required: true,  // ticketType is mandatory
