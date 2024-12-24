@@ -13,7 +13,7 @@ const getConnectionDetails = asyncHandler(async (req, res) => {
     }
   
     let userData;
-    if (data.role === "0") { // Admin
+    if (data.role === "0" || data.role === "1") { // Admin
       const admin = await Admin.findById(data._id).select("firstName lastName role _id");
       if (!admin) {
         return res.status(404).json(new ApiResponse(404, {}, "Admin not found"));

@@ -18,7 +18,7 @@ export const adminSchema = z.object({
       message: "Invalid date format",
     })
     .optional(),
-  email: z.string().email("Invalid email format"),
+  email: z.string().optional(),
   password: z.string().optional(),
   phone: z
     .string()

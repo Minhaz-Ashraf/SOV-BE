@@ -475,7 +475,7 @@ export const updateTicketStatus = asyncHandler(async (req, res) => {
   if (resolvedText) {
     ticket.resolvedText = resolvedText;
   }
-  // await ticket.save();
+  await ticket.save();
 
   // Return success response with the updated ticket
   return res

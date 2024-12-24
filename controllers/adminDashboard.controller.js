@@ -1433,6 +1433,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
     ...(status ? { "pageStatus.status": {$in : statusCheck} } : {}),
     ...(date && { createdAt: { $gte: startOfDay, $lte: endOfDay } }),
     pageCount: 6,
+    deleted: false,
   };
 
   console.log(searchCondition)
@@ -1623,6 +1624,7 @@ const getAllDataAgentStudentForSubadmin = asyncHandler(async (req, res) => {
     ...(tokenUser.role === "1" && {teamId : tokenUser._id}),
     ...(teamId && {teamId : teamId}),
     pageCount: 6,
+    deleted: false,
   };
 
   // Create search conditions for students
@@ -2152,13 +2154,23 @@ const getAllAgent = asyncHandler(async (req, res) => {
         phone: "$agentData.accountDetails.founderOrCeo.phone",
       },
     },
-    { $skip: skip },
-    { $limit: limit },
+    {
+      $facet: {
+        total: [{ $count: "count" }],
+        data: [{ $skip: skip }, { $limit: limit }],
+      },
+    },
+    {
+      $addFields: {
+        totalAgents: { $arrayElemAt: ["$total.count", 0] },
+      },
+    },
   ];
 
-  const agents = await Company.aggregate(pipeline);
+  const result = await Company.aggregate(pipeline);
 
-  const totalAgents = await Company.countDocuments(pipeline);
+  const agents = result[0].data;
+  const totalAgents = result[0].totalAgents || 0;
   const totalPages = Math.ceil(totalAgents / limit);
 
   const pagination = {

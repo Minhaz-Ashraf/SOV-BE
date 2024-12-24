@@ -36,7 +36,7 @@ const InstituteSchema = new Schema(
       type: String,
     },
     inTake: {
-      type: Array,
+      type: [String],
     },
     status: {
       type: String,

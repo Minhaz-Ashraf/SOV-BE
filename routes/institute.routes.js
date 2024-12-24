@@ -6,7 +6,7 @@ const router = Router();
 router.route("/all").get( getAllInstitute);
 router.route("/all-institute").get( getInstitutes);
 router.route("/one-institute").get( getInstituteById);
-router.route("/download-all").get( downloadAllInstitutesAsCSV);
+// router.route("/download-all").get( downloadAllInstitutesAsCSV);
 router.route("/add").post( verifyAdmin, addInstitute);
 router.route("/update/:id").patch( verifyAdmin, editInstitute);
 router.route("/delete/:id").patch( verifyAdmin, deleteInstitute);

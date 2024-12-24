@@ -44,10 +44,12 @@ const adminLogin = asyncHandler(async (req, res) => {
   if(payload.role === "1"){
     user = await Admin.findOne({
       email: payload.email.trim().toLowerCase(),
+      role: "1",
     });
   }else{
     user = await Admin.findOne({
       email: payload.email.trim().toLowerCase(),
+      role: "0",
     });
   }
   if (!user) {
@@ -311,7 +313,7 @@ const editTeamMember = asyncHandler(async (req, res) => {
   const { teamID } = req.params;
   const payload = req.body;
 
-  if(req.user.role !== "0"){
+  if (req.user.role !== "0") {
     return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
   }
 
@@ -330,7 +332,6 @@ const editTeamMember = asyncHandler(async (req, res) => {
     gender,
     maritalStatus,
     dob,
-    email,
     phone,
     profilePicture,
     dateOfJoining,
@@ -346,20 +347,8 @@ const editTeamMember = asyncHandler(async (req, res) => {
         .json(new ApiResponse(404, {}, "Team member not found"));
     }
 
-    if (email && email.toLowerCase().trim() !== existingTeamMember.email) {
-      const emailExists = await TeamMember.findOne({
-        email: email.toLowerCase().trim(),
-      });
-      if (emailExists) {
-        return res
-          .status(409)
-          .json(new ApiResponse(409, {}, "Email already in use"));
-      }
-    }
-
     if (firstName) existingTeamMember.firstName = firstName;
     if (lastName) existingTeamMember.lastName = lastName;
-    if (email) existingTeamMember.email = email.toLowerCase().trim();
     if (dob) existingTeamMember.dob = dob;
     if (dateOfJoining) existingTeamMember.dateOfJoining = dateOfJoining;
     if (gender) existingTeamMember.gender = gender;
@@ -372,25 +361,51 @@ const editTeamMember = asyncHandler(async (req, res) => {
       existingTeamMember.password = password;
     }
 
-    const tempemail = accountUpdatedTeam(
-      existingTeamMember.teamId, existingTeamMember.firstName, existingTeamMember.email, password, "https://sovportal.in/admin/role/auth/login"
-    );
-    await sendEmail({
-      to: email,
-      subject: `Your Portal Account Data Updated Successfully`,
-      htmlContent: tempemail,
-    });
+    if (payload.email) {
+      const newEmail = payload.email.toLowerCase().trim();
+      if (newEmail !== existingTeamMember.email) {
+        const emailExists = await TeamMember.findOne({ email: newEmail });
+        if (emailExists) {
+          return res
+            .status(409)
+            .json(new ApiResponse(409, {}, "Email already in use"));
+        }
+        existingTeamMember.email = newEmail;
+
+        // Send account update email
+        const tempemail = accountUpdatedTeam(
+          existingTeamMember.teamId,
+          existingTeamMember.firstName,
+          newEmail,
+          password,
+          "https://sovportal.in/admin/role/auth/login"
+        );
+        await sendEmail({
+          to: newEmail,
+          subject: `Your Portal Account Data Updated Successfully`,
+          htmlContent: tempemail,
+        });
+      }
+    }
 
     const updatedTeamMember = await existingTeamMember.save();
 
     return res
       .status(200)
-      .json(new ApiResponse(200, updatedTeamMember, "Team member updated successfully"));
+      .json(
+        new ApiResponse(200, updatedTeamMember, "Team member updated successfully")
+      );
   } catch (error) {
     console.log(error);
     return res
       .status(500)
-      .json(new ApiResponse(500, {}, "An error occurred while updating the team member"));
+      .json(
+        new ApiResponse(
+          500,
+          {},
+          "An error occurred while updating the team member"
+        )
+      );
   }
 });
 
