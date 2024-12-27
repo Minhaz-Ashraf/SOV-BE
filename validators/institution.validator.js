@@ -133,7 +133,7 @@ export const CourseFeeApplicationSchema = z.object({
 
 export const VisaSchema = z.object({
   personalDetails: PersonalInformationSchema,
-  loa:z.string().nonempty("LOA is required"),
+  loa:z.string().optional(),
   offerLetter: z.string().optional(),
   gicLetter: z.string().optional(),
   medical: z.string().optional(),
