@@ -113,6 +113,7 @@ const getAllInstitute = asyncHandler(async (req, res) => {
 const addInstitute = asyncHandler(async (req, res) => {
   const {
     instituteName,
+    instituteStatus,
     country,
     inTake,
     status,
