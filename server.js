@@ -29,6 +29,7 @@ import ticketRouter from "./routes/ticket.routes.js";
 import adminRouter from "./routes/adminDashboard.routes.js";
 import adminAuthRouter from "./routes/admin.routes.js";
 import connectionDetailsRouter from "./routes/getConnectionDetails.routes.js";
+import airTicketRouter from "./routes/airTicketing.routes.js";
 
 
 
@@ -47,5 +48,6 @@ app.use("/api/ticket",ticketRouter );
 app.use("/api/admin",adminRouter );
 app.use("/api/auth/admin",adminAuthRouter );
 app.use("/api/socket", connectionDetailsRouter);
+app.use("/api/air-ticket", airTicketRouter);
 
 export default app;

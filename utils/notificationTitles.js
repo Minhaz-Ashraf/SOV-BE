@@ -49,6 +49,8 @@ export const NOTIFICATION_TITLES = {
     AGENT_STUDENT_VISA_STAMP: "Students by Agent Stamp",
     STUDENT_STUDENT_VISA_STAMP: "Students by Student Stamp",
     DEFERMATION_BY_AGENT : "",
-    DEFERMATION_BY_STUDENT : ""
+    DEFERMATION_BY_STUDENT : "",
+    AIR_TICKET_REQUEST_AGENT : "",
+    AIR_TICKET_REQUEST_STUDENT : "",
   };
   
