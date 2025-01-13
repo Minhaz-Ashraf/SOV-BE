@@ -1544,7 +1544,54 @@ const getVisaDocuments = asyncHandler(async (req, res) => {
   }
 });
 
+
+const getAgentVisa = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1; 
+  const limit = parseInt(req.query.limit, 10) || 10; 
+  const skip = (page - 1) * limit; 
+  const {searchQuery} = req.query || ""; 
+
+  try {
+    const query = {
+      userId: req.user.id,
+      "visa.personalDetails": { $exists: true, $ne: null },
+    };
+
+    if (searchQuery) {
+      query.applicationId = { $regex: searchQuery, $options: "i" }; 
+    }
+
+    const institution = await Institution.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalDocuments = await Institution.countDocuments(query);
+
+    if (institution.length > 0) {
+      res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            data: institution,
+            totalDocuments,
+            totalPages: Math.ceil(totalDocuments / limit),
+            currentPage: page,
+          },
+          "Visa fetched successfully for the selected student"
+        )
+      );
+    } else {
+      res.status(404).json({ error: "No visas found " });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export {
+  getAgentVisa,
   registerOfferLetter,
   registerGIC,
   getAllApplications,

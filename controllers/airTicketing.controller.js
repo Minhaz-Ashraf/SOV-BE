@@ -174,14 +174,15 @@ export const getAllAirTicketingRequests = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const {userId} = req.query
     const skip = (page - 1) * limit;
 
     const query = {};
     const andConditions = [];
     
-    if (req.query.searchQuery) {
+    if (req.query.searchQuery || userId) {
         const regex = { $regex: req.query.searchQuery, $options: "i" };
-        if (req.user && req.user.role === '0') {
+        if (req.user && req.user.role === '0' || req.user.role === '1') {
             andConditions.push({
               $or: [
                 { customId: regex },
@@ -192,6 +193,8 @@ export const getAllAirTicketingRequests = async (req, res) => {
         } else {
             andConditions.push({
               airId: regex,
+              userInformationId: userId
+
             });
         }
     }
