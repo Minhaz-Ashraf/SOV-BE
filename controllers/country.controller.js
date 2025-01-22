@@ -2,7 +2,7 @@ import { CountryList } from "../models/country.model.js";
 import { Course } from "../models/course.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { PopularCourse } from './../models/popularCourseModel';
+import { PopularCourse } from './../models/popularCourseModel.js';
 
 
 const getAllCountries = asyncHandler(async (req, res) => {
