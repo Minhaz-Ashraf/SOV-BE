@@ -6,7 +6,7 @@ import fs from "fs";
 import { parse as json2csv } from "json2csv";
 import { fileURLToPath } from "url";
 import { CountryList } from "../models/country.model.js";
-import { PopularCourse } from "../models/PopularCourse.model.js";
+import { PopularCourse } from "../models/popularCourseModel.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

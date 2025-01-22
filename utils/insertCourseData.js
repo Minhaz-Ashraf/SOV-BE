@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import connectDb from "../db/index.js"; // Adjust this path as necessary
 import { courses, popularCourses } from "./courseData.js";
 import { Course } from "../models/course.model.js";
-import { PopularCourse } from "../models/PopularCourse.model.js";
+import { PopularCourse } from "../models/popularCourseModel.js";
 
 // Async IIFE to insert new course data into the Course collection
 (async () => {
