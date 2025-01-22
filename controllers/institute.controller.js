@@ -6,6 +6,7 @@ import fs from "fs";
 import { parse as json2csv } from "json2csv";
 import { fileURLToPath } from "url";
 import { CountryList } from "../models/country.model.js";
+import { PopularCourse } from "../models/PopularCourse.model.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -115,14 +116,15 @@ const addInstitute = asyncHandler(async (req, res) => {
     instituteName,
     country,
     inTake,
-    status,
     instituteImg,
+    instituteStatus,
     offerLetterPrice,
     aboutCollegeOrInstitute,
     keyHighlights,
     popularCourses,
     admissionAndFacilities,
     requirements,
+    websiteUrl,
   } = req.body;
 
   if (!instituteName || !country) {
@@ -144,6 +146,7 @@ const addInstitute = asyncHandler(async (req, res) => {
     popularCourses,
     admissionAndFacilities,
     requirements,
+    websiteUrl,
   });
 
   await institute.save();
@@ -157,6 +160,17 @@ const addInstitute = asyncHandler(async (req, res) => {
     console.log(countryData.preferredCountry);
     await countryData.save();
     message = "Institute added successfully and country preference updated";
+  }
+  const popularCourseName = popularCourses.trim();
+  if (popularCourseName) {
+    const existingCourse = await PopularCourse.findOne({
+      courseName: popularCourseName,
+    });
+
+    if (!existingCourse) {
+      const newCourse = new PopularCourse({ courseName: popularCourseName });
+      await newCourse.save();
+    }
   }
 
   return res.status(200).json(new ApiResponse(200, institute, message));
@@ -176,6 +190,7 @@ const editInstitute = asyncHandler(async (req, res) => {
     popularCourses,
     admissionAndFacilities,
     requirements,
+    websiteUrl,
   } = req.body;
 
   if (!instituteName || !country) {
@@ -199,6 +214,7 @@ const editInstitute = asyncHandler(async (req, res) => {
       popularCourses,
       admissionAndFacilities,
       requirements,
+      websiteUrl,
     },
     { new: true, runValidators: true }
   );
@@ -217,7 +233,18 @@ const editInstitute = asyncHandler(async (req, res) => {
     await countryData.save();
     message = "Institute updated successfully and country preference updated";
   }
+  const popularCourseName = popularCourses.trim();
+  if (popularCourseName) {
+    const existingCourse = await PopularCourse.findOne({
+      courseName: popularCourseName,
+    });
 
+    if (!existingCourse) {
+      // Add the new popular course
+      const newCourse = new PopularCourse({ courseName: popularCourseName });
+      await newCourse.save();
+    }
+  }
   return res.status(200).json(new ApiResponse(200, updatedInstitute, message));
 });
 
@@ -300,8 +327,94 @@ const downloadAllInstitutesAsCSV = asyncHandler(async (req, res) => {
   }
 });
 
+const getAllInstitutes = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    instituteName,
+    country,
+    inTake,
+    popularCourses,
+    searchQuery,
+  } = req.query;
+
+  let matchQuery = {};
+
+  if (searchQuery) {
+    const searchRegex = new RegExp(searchQuery, "i");
+    matchQuery = {
+      $or: [
+        { instituteName: searchRegex },
+        { country: searchRegex },
+        { popularCourses: searchRegex },
+      ],
+    };
+  }
+
+  if (instituteName) {
+    const regex = new RegExp(instituteName, "i");
+    matchQuery.instituteName = regex;
+  }
+
+  if (inTake) {
+    const regex = new RegExp(inTake, "i"); // Case-insensitive regex
+    matchQuery.inTake = { $elemMatch: { $regex: regex } };
+  }
+
+  if (popularCourses) {
+    const regex = new RegExp(popularCourses, "i");
+    matchQuery.popularCourses = regex;
+  }
+
+  if (country) {
+    const regex = new RegExp(country, "i");
+    matchQuery.country = regex;
+  }
+
+  const allInstitutes = await Institute.aggregate([
+    { $match: matchQuery },
+    {
+      $facet: {
+        totalCount: [{ $count: "count" }],
+        data: [{ $skip: (page - 1) * limit }, { $limit: parseInt(limit) }],
+      },
+    },
+  ]);
+
+  const totalRecords = allInstitutes[0]?.totalCount[0]?.count || 0;
+  const institutes = allInstitutes[0]?.data || [];
+  const totalPages = Math.ceil(totalRecords / limit);
+  const currentPage = parseInt(page);
+  const prevPage = currentPage > 1 ? currentPage - 1 : null;
+  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+
+  if (!institutes.length) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "No institutes found"));
+  }
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        totalRecords,
+        totalPages,
+        currentPage,
+        prevPage,
+        nextPage,
+        hasPreviousPage: prevPage !== null,
+        hasNextPage: nextPage !== null,
+        institutes,
+      },
+      "Institutes fetched successfully"
+    )
+  );
+});
+
 export {
   getAllInstitute,
+  getAllInstitutes,
   addInstitute,
   editInstitute,
   deleteInstitute,

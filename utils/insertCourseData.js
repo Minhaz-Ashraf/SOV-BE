@@ -1,8 +1,9 @@
 // import necessary modules
 import mongoose from "mongoose";
 import connectDb from "../db/index.js"; // Adjust this path as necessary
-import { courses } from "./courseData.js";
+import { courses, popularCourses } from "./courseData.js";
 import { Course } from "../models/course.model.js";
+import { PopularCourse } from "../models/PopularCourse.model.js";
 
 // Async IIFE to insert new course data into the Course collection
 (async () => {
@@ -11,12 +12,12 @@ import { Course } from "../models/course.model.js";
     await connectDb();
 
     // Prepare the course data for insertion
-    const courseDocuments = courses.map(courseName => ({
+    const courseDocuments = popularCourses.map(courseName => ({
       courseName,  // Map course name to courseName field in the schema
     }));
 
     // Insert new courses, ignoring duplicates
-    const insertResult = await Course.insertMany(courseDocuments, { ordered: false });
+    const insertResult = await PopularCourse.insertMany(courseDocuments, { ordered: false });
 
     console.log("Number of courses inserted:", insertResult.length);
 
@@ -27,7 +28,6 @@ import { Course } from "../models/course.model.js";
       console.error("Error inserting course data:", error);
     }
   } finally {
-    // Close the connection
     mongoose.connection.close();
   }
 })();

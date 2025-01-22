@@ -1093,3 +1093,29 @@ export const courses = [
  ]
   
   
+
+
+export const popularCourses = [
+"Bachelor’s in Financial Management",
+"Accountancy, Finance, Banking",
+"Bachelor’s in Actuarial Science",
+"Bachelor’s in Agricultural Science",
+"Bachelor's in Architecture Studies",
+"Bachelors in Biomedical Engineering",
+"Bachelor’s in Core Engineering",
+"Bachelor of Earth Science",
+"Bachelor of Computer Science",
+"Bachelor of Psychology",
+"Bachelor of Tourism & Hospitality Management",
+"Bachelor of Engineering (In any Field)",
+"Postgraduate Diploma & Bachelors of Agricultural Science & Forestry",
+"Bachelor of Tourism",
+"Bachelor of Hospitality Management",
+"Master of Business Administration",
+"Bachelor’s & Diplomas in Artificial Intelligence",
+"Master of Professional Accounting",
+"Bachelor of Sports Management",
+"Bachelor of Information Technology & Computer Science",
+"Bachelor of Design Innovation",
+"Bachelor of Viticulture and Oenology",
+]

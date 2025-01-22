@@ -3,15 +3,15 @@ import mongoose, { Schema } from "mongoose";
 // Define the schema for the countries
 const CountryListSchema = new Schema({
   allCountry: {
-    type: [String],  // Array of country names (all countries)
-    required: true,  // This is required as it contains all countries
+    type: [String], 
+    required: true,
   },
   preferredCountry: {
-    type: [String],  // Array of preferred country names
-    required: true,  // Preferred countries list is also required
+    type: [String],  
+    required: true, 
   }
 }, {
-  timestamps: true,  // Automatically add createdAt and updatedAt fields
+  timestamps: true,  
 });
 
 // Create the CountryList model

@@ -41,6 +41,9 @@ const InstituteSchema = new Schema(
     instituteStatus: {
       type: String,
     },
+    websiteUrl: {
+      type: String,
+    }
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt fields
