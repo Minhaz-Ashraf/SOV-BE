@@ -357,7 +357,8 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
   }
 
   if (inTake) {
-    const regex = new RegExp(inTake, "i"); // Case-insensitive regex
+    const regex = new RegExp(
+      inTake.replace(/ /g, "[.\\s]*"), "i");
     matchQuery.inTake = { $elemMatch: { $regex: regex } };
   }
 
@@ -373,6 +374,7 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
 
   const allInstitutes = await Institute.aggregate([
     { $match: matchQuery },
+    { $sort: { updatedAt: -1 } },
     {
       $facet: {
         totalCount: [{ $count: "count" }],
@@ -380,9 +382,13 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
       },
     },
   ]);
-
   const totalRecords = allInstitutes[0]?.totalCount[0]?.count || 0;
   const institutes = allInstitutes[0]?.data || [];
+  const instituteNames = country
+    ? await Institute.find({ country: new RegExp(country, "i") }).distinct(
+        "instituteName"
+      )
+    : [];
   const totalPages = Math.ceil(totalRecords / limit);
   const currentPage = parseInt(page);
   const prevPage = currentPage > 1 ? currentPage - 1 : null;
@@ -406,6 +412,7 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
         hasPreviousPage: prevPage !== null,
         hasNextPage: nextPage !== null,
         institutes,
+        instituteNames: instituteNames,
       },
       "Institutes fetched successfully"
     )

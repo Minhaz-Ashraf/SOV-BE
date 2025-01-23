@@ -14,6 +14,10 @@ const AirTicketingRequestSchema = new Schema({
   userId : { type: Schema.Types.ObjectId, required: true},
   customId: { type: String, required: true},
   airId: { type: String, required: true},
+  isDelete:{
+    type: Boolean,
+    default: false
+  }
 }, {timestamps: true});
 
 export const AirTicketing = mongoose.model("AirTicketingRequest", AirTicketingRequestSchema);
