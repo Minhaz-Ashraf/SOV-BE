@@ -18,7 +18,7 @@ const InstituteSchema = new Schema(
       trim: true,
     },
     offerLetterPrice: {
-      type: Number,
+      type: String,
     },
     aboutCollegeOrInstitute: {
       type: String,
