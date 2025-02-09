@@ -452,11 +452,12 @@ const editTeamMember = asyncHandler(async (req, res) => {
 
   try {
     // Check if the team member exists
-    const existingTeamMember = await TeamMember.findOne({ _id: teamID });
+    let ModelCollection =  req.user.role === "0" && req.query.userType === "team" ? TeamMember :  req.user.role === "0" && req.query.userType === "partner" ? Partner  : req.user.role === "4" ? ParntnerTeamMember : null 
+    const existingTeamMember = await ModelCollection.findOne({ _id: teamID });
     if (!existingTeamMember) {
       return res
         .status(404)
-        .json(new ApiResponse(404, {}, "Team member not found"));
+        .json(new ApiResponse(404, {}, "Profile not found"));
     }
 
     if (firstName) existingTeamMember.firstName = firstName;
@@ -541,7 +542,7 @@ const editTeamMember = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           updatedTeamMember,
-          "Team member updated successfully"
+          "Profile updated successfully"
         )
       );
   } catch (error) {
@@ -561,16 +562,18 @@ const editTeamMember = asyncHandler(async (req, res) => {
 const softDeleteTeamMember = asyncHandler(async (req, res) => {
   const { teamID } = req.params;
 
-  if (req.user.role !== "0") {
+  if (req.user.role !== "0" ||  req.user.role !== "4" ) {
     return res.status(403).json(new ApiResponse(403, {}, "Unauthorized"));
   }
 
   try {
-    const teamMember = await TeamMember.findOne({ _id: teamID });
+   let ModelCollection =  req.user.role === "0" ? TeamMember : req.user.role === "4" ? ParntnerTeamMember : null 
+  
+    const teamMember = await ModelCollection.findOne({ _id: teamID });
     if (!teamMember) {
       return res
         .status(404)
-        .json(new ApiResponse(404, {}, "Team member not found"));
+        .json(new ApiResponse(404, {}, "Profile not found"));
     }
 
     teamMember.isDeleted = true;
