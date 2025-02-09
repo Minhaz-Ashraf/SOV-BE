@@ -6,8 +6,11 @@ import {
   changePassword,
   editProfile,
   editTeamMember,
+  getAllPartner,
   getAllTeamMembers,
+  getPartnerEmployees,
   getProfileData,
+  getProfileDataById,
   softDeleteTeamMember,
 } from "../controllers/admin.controller.js";
 import { verifyAdmin } from "../middlewares/auth.middleware.js";
@@ -23,5 +26,11 @@ router.route("/add-team-member").post(verifyAdmin, addTeamMember);
 router.route("/edit-team-member/:teamID").put(verifyAdmin, editTeamMember);
 router.route("/delete-team-member/:teamID").patch(verifyAdmin, softDeleteTeamMember);
 router.route("/get-team-members").get(verifyAdmin, getAllTeamMembers);
+router.route("/get-partner-lists").get(verifyAdmin, getAllPartner);
+router.route("/get-partner-employees").get(verifyAdmin, getPartnerEmployees);
+router.route("/get-one-profile").get(verifyAdmin, getProfileDataById);
+
+
+
 
 export default router;

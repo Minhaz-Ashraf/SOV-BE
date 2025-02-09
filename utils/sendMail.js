@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import SibApiV3Sdk from "@getbrevo/brevo";
 import nodemailer from "nodemailer";
+import { z } from "zod";
 
 dotenv.config();
+const emailSchema = z.string().email();
 
 const BREVO_API = process.env.BREVO_API_KEY;
 const EMAIL_FROM = process.env.DOMAIN_EMAIL;
@@ -15,6 +17,11 @@ apiKey.apiKey = BREVO_API;
 
 export const sendEmail = async ({ to, subject, htmlContent }) => {
   try {
+    const validation = emailSchema.safeParse(to);
+    if (!validation.success) {
+      console.warn("Invalid email address, skipping email send.");
+      return;
+    }
 
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.subject = subject;
@@ -27,7 +34,7 @@ export const sendEmail = async ({ to, subject, htmlContent }) => {
     console.log("Email sent successfully");
   } catch (error) {
     console.error("Error sending email:", error.message);
-    throw error; // Propagate the error up to the caller
+    // throw error; // Propagate the error up to the caller
   }
 };
 

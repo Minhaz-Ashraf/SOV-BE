@@ -1,4 +1,5 @@
 import { Agent } from "../models/agent.model.js";
+import { AirTicketing } from "../models/airTicketingModel.js";
 import { Company } from "../models/company.model.js";
 import { Institution } from "../models/institution.model.js";
 import { Student } from "../models/student.model.js";
@@ -44,6 +45,13 @@ export const restoreDeletedStatus = async (id, type, session) => {
         { $set: { deleted: false } },
         { session }
       );
+
+      await AirTicketing.updateMany(
+        {userId : studentInfo.studentId },
+        { $set : { deleted: false } },
+        { session }
+      );
+
       console.log("Updated Tickets:", ticketUpdateResult.modifiedCount);
     }
   }
@@ -97,6 +105,13 @@ export const restoreDeletedStatus = async (id, type, session) => {
         { $set: { deleted: false } },
         { session }
       );
+
+      await AirTicketing.updateMany(
+        {userId : company.agentId },
+        { $set : { deleted: false } },
+        { session }
+      );
+      
       console.log("Updated Tickets for Company:", ticketUpdateResult.modifiedCount);
     }
   }

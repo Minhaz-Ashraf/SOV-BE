@@ -15,7 +15,7 @@ import { Admin } from "../models/admin.model.js";
       firstName: "Slashify",
       lastName: "Tech",
       dob: "1990-05-10", 
-      email: "theslashifytech@gamil.com",
+      email: "theslashify@gamil.com",
       password: "slashifytech0023",
       phone: "+12345445467890",
       role: "0"

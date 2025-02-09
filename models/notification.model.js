@@ -44,6 +44,8 @@ const notificationSchema = new Schema(
       type: Object,
       default: {},
     },
+    state: { type: String, required: false },
+    country: { type: String, required: false }
   },
   { timestamps: true }
 );

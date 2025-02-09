@@ -5,6 +5,8 @@ import { Student } from "../models/student.model.js";
 import { Agent } from "../models/agent.model.js";
 import { Admin } from "../models/admin.model.js";
 import { TeamMember } from "../models/team.model.js";
+import { Partner } from "../models/Partner.model.js";
+import { ParntnerTeamMember } from "../models/PartnerTeam.model.js";
 
 const verifyJwt = asyncHandler(async (req, res, next) => {
   try {
@@ -76,9 +78,17 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
       user = await TeamMember.findById(decodeToken.id).select(
         "-password "
       );
+    }else if(decodeToken.role === "4"){
+      user = await Partner.findById(decodeToken.id).select(
+        "-password "
+      );
+    }else if(decodeToken.role === "5"){
+      user = await ParntnerTeamMember.findById(decodeToken.id).select(
+        "-password "
+      );
     }
 
-    if (user.role !== "0" && user.role !== "1") {
+    if (user.role !== "0" && user.role !== "1" &&  user.role !== "4" &&  user.role !== "5") {
       return res
         .status(401)
         .json(new ApiResponse(401, {}, "Unauthorized user"));

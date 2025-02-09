@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import { Admin } from "./admin.model.js";
 
@@ -32,12 +31,13 @@ const ResidenceAddressSchema = new Schema(
   );
 
 
-const teamMemberSchema = new Schema(
+const partnerTeamSchema = new Schema(
   {
     residenceAddress: {
         type: ResidenceAddressSchema,
         required: false,
     },
+    
     teamId:{
       type: String,
       required: true,
@@ -52,4 +52,4 @@ const teamMemberSchema = new Schema(
   }
 );
 
-export const TeamMember = Admin.discriminator("1", teamMemberSchema);
+export const ParntnerTeamMember = Admin.discriminator("5", partnerTeamSchema);

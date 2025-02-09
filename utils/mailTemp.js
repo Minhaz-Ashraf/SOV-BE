@@ -1,9 +1,5 @@
-
-
-
-export const agentSignUpTemp = (firstName, otp)=>{
-    
-    return `
+export const agentSignUpTemp = (firstName, otp) => {
+  return `
       <p>Dear <strong>${firstName}</strong>,</p>
       <p>Thank you for registering with Sov Portal! To complete your Agent account setup, please verify your email address by using the One-Time Password (OTP) provided below.</p>
       <p><strong>Your OTP: ${otp}</strong></p>
@@ -12,9 +8,9 @@ export const agentSignUpTemp = (firstName, otp)=>{
       <p>If you need any assistance, feel free to contact our support team at <a href="mailto:support@sovportal.in">support@sovportal.in</a>.</p>
       <p>Best regards,<br/>Sov Portal<br/>Helping you make your study abroad dreams come true!</p>
     `;
-}
+};
 
-export const agentAccountCredentials = (firstName, email, password) =>{
+export const agentAccountCredentials = (firstName, email, password) => {
   // console.log()
   return `<p>Dear <strong>${firstName}</strong>,</p>
   
@@ -37,9 +33,9 @@ export const agentAccountCredentials = (firstName, email, password) =>{
 <p><strong>Sov Portal</strong><br>
 Supporting your success in global education</p>
 `;
-}
+};
 
-export const studentSignUpTemp = (firstName, otp)=>{
+export const studentSignUpTemp = (firstName, otp) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Thank you for signing up with Sov Portal! To complete your Student account setup, please verify your email address by using the One-Time Password (OTP) provided below.</p>
@@ -56,9 +52,9 @@ export const studentSignUpTemp = (firstName, otp)=>{
 <p><strong>Sov Portal</strong><br>
 Helping you make your study abroad dreams come true!</p>
 `;
-}
+};
 
-export const studentAccountCredentials = (firstName, email, password)=>{
+export const studentAccountCredentials = (firstName, email, password) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Congratulations! Your email has been successfully verified, and your student sign-up account on Sov Portal is now active.</p>
@@ -80,10 +76,10 @@ export const studentAccountCredentials = (firstName, email, password)=>{
 <p><strong>Sov Portal</strong><br>
 Supporting your success in global education</p>
 `;
-}
+};
 
-export const agentRegistrationComplete = (firstName)=>{
-    return `<p>Dear <strong>${firstName}</strong>,</p>
+export const agentRegistrationComplete = (firstName) => {
+  return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Thank you for registering as an agent on Sov Portal! We have successfully received your details and completed your registration process.</p>
 
@@ -100,9 +96,9 @@ export const agentRegistrationComplete = (firstName)=>{
 <p><strong>Sov Portal</strong><br>
 Empowering agents to streamline study visa processes</p>
 `;
-}
+};
 
-export const studentRegistrationComplete = (firstName)=>{
+export const studentRegistrationComplete = (firstName) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Thank you for registering as a student on Sov Portal! We have successfully received your details and completed your registration process.</p>
@@ -120,9 +116,14 @@ export const studentRegistrationComplete = (firstName)=>{
 <p><strong>Sov Portal</strong><br>
 Empowering agents to streamline study visa processes</p>
 `;
-}
+};
 
-export const studentOfferLetterApprovedTemp = (firstName, collegeName, country, courseName)=>{
+export const studentOfferLetterApprovedTemp = (
+  firstName,
+  collegeName,
+  country,
+  courseName
+) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Congratulations! We are excited to inform you that your offer letter from <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program has been approved.
@@ -144,12 +145,17 @@ export const studentOfferLetterApprovedTemp = (firstName, collegeName, country, 
 <p><strong>Sov Portal</strong><br>
 Helping you make your study abroad dreams a reality</p>
 `;
-}
+};
 
-export const studentOfferLetterRejectedTemp =  (firstName, collegeName, country, courseName, rejectionReason )=>{
-  
-  console.log(rejectionReason, "ppppppp")
-     return `<p>Dear <strong>${firstName}</strong>,</p>
+export const studentOfferLetterRejectedTemp = (
+  firstName,
+  collegeName,
+  country,
+  courseName,
+  rejectionReason
+) => {
+  console.log(rejectionReason, "ppppppp");
+  return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Thank you for applying to <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program. Unfortunately, your offer letter has been rejected.</p>
 
@@ -171,11 +177,17 @@ export const studentOfferLetterRejectedTemp =  (firstName, collegeName, country,
 <p>Best regards,</p>
 <p><strong>Sov Portal</strong><br>
 Supporting you on your path to higher education abroad</p>
-`
-}
+`;
+};
 
-
-export const agentOfferLetterApproved = (studentId, studentName,  agentFirstName, collegeName, country, courseName )=>{
+export const agentOfferLetterApproved = (
+  studentId,
+  studentName,
+  agentFirstName,
+  collegeName,
+  country,
+  courseName
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We are pleased to inform you that the offer letter for <strong>${studentName}</strong> [<strong>${studentId} </strong>] has been approved by <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program.</p>
@@ -204,10 +216,18 @@ export const agentOfferLetterApproved = (studentId, studentName,  agentFirstName
 <p>Best regards,</p>
 <p><strong>Sov Portal</strong><br>
 Empowering agents to help students achieve their study abroad goals</p>
-`
-}
+`;
+};
 
-export const agentOfferLetterRejected = (agentFirstName, collegeName, country, courseName, rejectionReason, studentName, studentId)=>{
+export const agentOfferLetterRejected = (
+  agentFirstName,
+  collegeName,
+  country,
+  courseName,
+  rejectionReason,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We regret to inform you that the offer letter for <strong></strong> has been rejected by <strong>${collegeName}</strong> in <strong>${country}</strong> for the <strong>${courseName}</strong> program.</p>
@@ -242,8 +262,7 @@ export const agentOfferLetterRejected = (agentFirstName, collegeName, country, c
 Partnering with you to help students achieve their study abroad dreams</p>
 
 `;
-}
-
+};
 
 export const agentPasswordResetEmail = (otpCode) => {
   return `<p>Dear <strong>Agent</strong>,</p>
@@ -270,7 +289,6 @@ Your trusted partner in study visa solutions</p>
 `;
 };
 
-
 export const studentPasswordResetEmail = (otpCode) => {
   return `<p>Dear Student</p>
 
@@ -296,8 +314,14 @@ Supporting you on your study abroad journey</p>
 `;
 };
 
-
-export const studentRegistrationCompleteByAgent = (firstName, agentName, studentID, studentName, agentEmail, agentPhone) => {
+export const studentRegistrationCompleteByAgent = (
+  firstName,
+  agentName,
+  studentID,
+  studentName,
+  agentEmail,
+  agentPhone
+) => {
   return `
     <p>Dear <strong>${firstName}</strong>,</p>
 
@@ -344,7 +368,6 @@ export const studentAccountApproved = (firstName) => {
     Your trusted guide to studying abroad</p>
   `;
 };
-
 
 export const studentRegistrationRejected = (firstName, rejectionReason) => {
   return `
@@ -444,8 +467,12 @@ export const emailChangeOtpTemplate = (firstName, otpCode) => {
   `;
 };
 
-
-export const courseFeeAgentApplicationRejected = (agentFirstName, rejectionReason, studentName, studentId)=>{
+export const courseFeeAgentApplicationRejected = (
+  agentFirstName,
+  rejectionReason,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We regret to inform you that the course fee application for <strong>${studentName}(${studentId})</strong> has been rejected by our admin team.</p>
@@ -477,9 +504,13 @@ export const courseFeeAgentApplicationRejected = (agentFirstName, rejectionReaso
 Helping you support students in achieving their educational goals
 
 `;
-}
+};
 
-export const courseFeeAgentApplicationApproved = (agentFirstName, studentName, studentId) => {
+export const courseFeeAgentApplicationApproved = (
+  agentFirstName,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We are pleased to inform you that the course fee application for <strong>${studentName} (${studentId})</strong> has been approved by our admin team.</p>
@@ -502,7 +533,7 @@ Empowering agents to support students on their study abroad journey
 </p>`;
 };
 
-export const studentCourseFeeApprovedTemp = (firstName)=>{
+export const studentCourseFeeApprovedTemp = (firstName) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Congratulations! Your course fee application has been approved by our admin team. You are now one step closer to securing your place in your program.</p>
@@ -519,12 +550,11 @@ export const studentCourseFeeApprovedTemp = (firstName)=>{
 <p><strong>Sov Portal</strong><br>
 Supporting your journey to study abroad</p>
 `;
-}
+};
 
-export const studentCourseFeeRejectedTemp =  (firstName, rejectionReason)=>{
-  
-  console.log(rejectionReason, "ppppppp")
-     return `<p>Dear <strong>${firstName}</strong>,</p>
+export const studentCourseFeeRejectedTemp = (firstName, rejectionReason) => {
+  console.log(rejectionReason, "ppppppp");
+  return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We regret to inform you that your course fee application has been rejected by our admin team.</p>
 
@@ -547,10 +577,16 @@ export const studentCourseFeeRejectedTemp =  (firstName, rejectionReason)=>{
 <p>Best regards,</p>
 <p><strong>Sov Portal</strong><br>
 Dedicated to helping you achieve your study abroad goals</p>
-`
-}
+`;
+};
 
-export const visaAgentApplicationRejected = (agentFirstName, country, rejectionReason, studentName, studentId)=>{
+export const visaAgentApplicationRejected = (
+  agentFirstName,
+  country,
+  rejectionReason,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We regret to inform you that the visa lodgment application for <strong>${studentName}(${studentId})</strong> for <strong>${country}</strong> has been rejected by our admin team.</p>
@@ -583,9 +619,14 @@ export const visaAgentApplicationRejected = (agentFirstName, country, rejectionR
 Supporting agents in helping students achieve their study abroad aspirations.</p>
 
 `;
-}
+};
 
-export const visaAgentApplicationApproved = (agentFirstName, country, studentName, studentId) => {
+export const visaAgentApplicationApproved = (
+  agentFirstName,
+  country,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We are pleased to inform you that the visa lodgment application for <strong>${studentName}(${studentId})</strong> has been approved by our admin team for <strong>${country}</strong></p>
@@ -609,7 +650,7 @@ Partnering with you to support students’ educational journeys abroad
 </p>`;
 };
 
-export const studentVisaApprovedTemp = (firstName, country)=>{
+export const studentVisaApprovedTemp = (firstName, country) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>Congratulations! We’re excited to inform you that your visa lodgment application for <strong>${country}</strong> has been approved by our admin team.</p>
@@ -629,12 +670,15 @@ export const studentVisaApprovedTemp = (firstName, country)=>{
 <p><strong>Sov Portal</strong><br>
 Empowering you on your journey to study abroad</p>
 `;
-}
+};
 
-export const studentVisaRejectedTemp =  (firstName, country, rejectionReason)=>{
-  
-  console.log(rejectionReason, "ppppppp")
-     return `<p>Dear <strong>${firstName}</strong>,</p>
+export const studentVisaRejectedTemp = (
+  firstName,
+  country,
+  rejectionReason
+) => {
+  console.log(rejectionReason, "ppppppp");
+  return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We regret to inform you that your visa lodgment application for <strong>${country}</strong> has been rejected by our admin team.</p>
 
@@ -660,10 +704,16 @@ export const studentVisaRejectedTemp =  (firstName, country, rejectionReason)=>{
 <p>Best regards,</p>
 <p><strong>Sov Portal</strong><br>
 Helping you reach your educational goals abroad</p>
-`
-}
+`;
+};
 
-export const visaAgentEmbassyApplicationRejected = (agentFirstName, country, rejectionReason, studentName, studentId)=>{
+export const visaAgentEmbassyApplicationRejected = (
+  agentFirstName,
+  country,
+  rejectionReason,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We regret to inform you that the visa application for <strong>${studentName}(${studentId})</strong> has been rejected by the embassy for  <strong>${country}</strong></p>
@@ -696,9 +746,14 @@ export const visaAgentEmbassyApplicationRejected = (agentFirstName, country, rej
 Helping you support students’ educational aspirations abroad</p>
 
 `;
-}
+};
 
-export const visaAgentEmbassyApplicationApproved = (agentFirstName, country, studentName, studentId) => {
+export const visaAgentEmbassyApplicationApproved = (
+  agentFirstName,
+  country,
+  studentName,
+  studentId
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We’re thrilled to inform you that the visa application for <strong>${studentName}(${studentId})</strong> has been approved by the embassy for <strong>${country}</strong></p>
@@ -722,7 +777,7 @@ Your trusted partner in study abroad success
 </p>`;
 };
 
-export const studentEmbassyVisaApprovedTemp = (firstName, country)=>{
+export const studentEmbassyVisaApprovedTemp = (firstName, country) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We are thrilled to inform you that your visa application for <strong>${country}</strong> has been approved by the embassy! This is a major step forward in your study abroad journey, and we couldn't be more excited for you.</p>
@@ -742,12 +797,15 @@ export const studentEmbassyVisaApprovedTemp = (firstName, country)=>{
 <p><strong>Sov Portal</strong><br>
 Supporting you in achieving your global education dreams</p>
 `;
-}
+};
 
-export const studentEmbassyVisaRejectedTemp =  (firstName, country, rejectionReason)=>{
-  
-  console.log(rejectionReason, "ppppppp")
-     return `<p>Dear <strong>${firstName}</strong>,</p>
+export const studentEmbassyVisaRejectedTemp = (
+  firstName,
+  country,
+  rejectionReason
+) => {
+  console.log(rejectionReason, "ppppppp");
+  return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We regret to inform you that your visa application for <strong>${country}</strong> has been rejected by the embassy. We understand that this may be disappointing news, and we’re here to support you with any next steps.
 </p>
@@ -769,10 +827,15 @@ export const studentEmbassyVisaRejectedTemp =  (firstName, country, rejectionRea
 <p>Best regards,</p>
 <p><strong>Sov Portal</strong><br>
 Helping you achieve your educational goals abroad</p>
-`
-}
+`;
+};
 
-export const agentSideTicketApResolved = (agentFirstName, ticketPriority, ticktType, ticketSolution) => {
+export const agentSideTicketApResolved = (
+  agentFirstName,
+  ticketPriority,
+  ticktType,
+  ticketSolution
+) => {
   return `<p>Dear <strong>${agentFirstName}</strong>,</p>
 
 <p>We’re pleased to inform you that the ticket you raised has been successfully resolved. Please find the details and solution below:</p>
@@ -796,7 +859,12 @@ Helping you deliver a seamless study abroad experience
 </p>`;
 };
 
-export const studentSideTicketResolved = (firstName, ticketPriority, ticktType, ticketSolution)=>{
+export const studentSideTicketResolved = (
+  firstName,
+  ticketPriority,
+  ticktType,
+  ticketSolution
+) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We’re reaching out to let you know that the support ticket you submitted has been successfully resolved. Please find the details and solution below:</p>
@@ -818,9 +886,9 @@ export const studentSideTicketResolved = (firstName, ticketPriority, ticktType, 
 <p><strong>SOV Portal</strong><br>
 Committed to supporting your journey to study abroad
 </p>`;
-}
+};
 
-export const changeRegisteredEmail = (firstName, email)=>{
+export const changeRegisteredEmail = (firstName, email) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We are writing to confirm that your registered Email id has been successfully updated in our system.</p>
@@ -838,9 +906,9 @@ export const changeRegisteredEmail = (firstName, email)=>{
 <p><strong>SOV Portal</strong><br>
 Ensuring a secure and seamless experience
 </p>`;
-}
+};
 
-export const changeRegisteredPassword = (firstName)=>{
+export const changeRegisteredPassword = (firstName) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We’re writing to confirm that your password has been successfully updated on the portal.</p>
@@ -854,9 +922,9 @@ export const changeRegisteredPassword = (firstName)=>{
 <p><strong>SOV Portal</strong><br>
 Dedicated to supporting your educational journey
 </p>`;
-}
+};
 
-export const accountDeletedSuccessfully = (firstName, userId)=>{
+export const accountDeletedSuccessfully = (firstName, userId) => {
   return `<p>Dear <strong>${firstName}</strong>,</p>
 
 <p>We regret to inform you that your account on the portal has been deleted. As a result, you will no longer be able to access the portal or its features.</p>
@@ -882,9 +950,9 @@ export const accountDeletedSuccessfully = (firstName, userId)=>{
 <p><strong>SOV Portal</strong><br>
 Helping you stay connected to your goals
 </p>`;
-}
+};
 
-export const approvalRequestAgent = ( agentName, agentId )=>{
+export const approvalRequestAgent = (agentName, agentId) => {
   return `<p>Dear <strong>Admin</strong>,</p>
 
 <p>We would like to inform you that a new registration has been completed by <strong>${agentName}</strong>. The registration details are now pending your approval before the student or Agent can access their dashboard.</p>
@@ -901,9 +969,9 @@ export const approvalRequestAgent = ( agentName, agentId )=>{
 <p>Best regards,</p>
 <p><strong>SOV Portal</strong><br>
 </p>`;
-}
+};
 
-export const approvalRequestStudent = ( studentName, studentId )=>{
+export const approvalRequestStudent = (studentName, studentId) => {
   return `<p>Dear <strong>Admin</strong>,</p>
 
 <p>We would like to inform you that a new registration has been completed by <strong>${studentName}</strong>. The registration details are now pending your approval before the student or Agent can access their dashboard.</p>
@@ -920,9 +988,15 @@ export const approvalRequestStudent = ( studentName, studentId )=>{
 <p>Best regards,</p>
 <p><strong>SOV Portal</strong><br>
 </p>`;
-}
+};
 
-export const accountCredentialsTeam = (teamMemId, teamMemName, emailId, password, portalLink )=>{
+export const accountCredentialsTeam = (
+  teamMemId,
+  teamMemName,
+  emailId,
+  password,
+  portalLink
+) => {
   return `<p>Dear <strong>${teamMemName}</strong>,</p>
 
 <p>We’re excited to welcome you to the portal team! Your account has been created by the Super Admin, and you are now equipped to handle all portal-related tasks on their behalf.</p>
@@ -950,13 +1024,19 @@ export const accountCredentialsTeam = (teamMemId, teamMemName, emailId, password
 <p><strong>SOV Portal</strong><br>
 Supporting seamless operations for the portal
 </p>`;
-}
+};
 
-
-export const accountUpdatedTeam = (teamMemId, teamMemName, emailId, password, portalLink )=>{
-
-  const passwordItem = password ? `<li><strong>Password:</strong> ${password}</li>
-  <li><strong>Portal Link:</strong> ${portalLink} </li>` : `<li><strong>Portal Link:</strong> ${portalLink} </li>`;
+export const accountUpdatedTeam = (
+  teamMemId,
+  teamMemName,
+  emailId,
+  password,
+  portalLink
+) => {
+  const passwordItem = password
+    ? `<li><strong>Password:</strong> ${password}</li>
+  <li><strong>Portal Link:</strong> ${portalLink} </li>`
+    : `<li><strong>Portal Link:</strong> ${portalLink} </li>`;
   return `<p>Dear <strong>${teamMemName}</strong>,</p>
 
 <p>Your account has been updated by the Super Admin, and you are now equipped to handle all portal-related tasks on their behalf.</p>
@@ -983,10 +1063,9 @@ ${passwordItem}
 <p><strong>SOV Portal</strong><br>
 Supporting seamless operations for the portal
 </p>`;
-}
+};
 
-
-export const withdrawalSuccessfulStudent = ( studentName, purpose )=>{
+export const withdrawalSuccessfulStudent = (studentName, purpose) => {
   return `<p>Dear <strong>${studentName}</strong>,</p>
 
 <p>We’re happy to inform you that the withdrawal payment you requested has been successfully transferred to your registered bank account. Below are the details of the transaction:</p>
@@ -1004,9 +1083,14 @@ export const withdrawalSuccessfulStudent = ( studentName, purpose )=>{
 <p><strong>SOV Portal</strong><br>
 Supporting your journey with ease.
 </p>`;
-}
+};
 
-export const withdrawalSuccessfulAgent = ( agentName, studentName, studentId, purpose )=>{
+export const withdrawalSuccessfulAgent = (
+  agentName,
+  studentName,
+  studentId,
+  purpose
+) => {
   return `<p>Dear <strong>${agentName}</strong>,</p>
 
 <p>We’re pleased to inform you that the withdrawal payment  you requested has been successfully transferred to a student registered bank account. Below are the details of the transaction:</p>
@@ -1032,9 +1116,9 @@ export const withdrawalSuccessfulAgent = ( agentName, studentName, studentId, pu
 <p><strong>SOV Portal</strong><br>
 Supporting your journey with ease
 </p>`;
-}
+};
 
-export const withdrawalRequestAdmin = (studentName, studentId, purpose )=>{
+export const withdrawalRequestAdmin = (studentName, studentId, purpose) => {
   return `<p>Dear <strong>Admin</strong>,</p>
 
 <p>This is to notify you that a withdrawal request has been submitted by a user for processing. Please find the details of the request below:</p>
@@ -1057,7 +1141,152 @@ export const withdrawalRequestAdmin = (studentName, studentId, purpose )=>{
 <p><strong>SOV Portal</strong><br>
 Facilitating seamless financial transactions.
 </p>`;
-}
-// =============================
+};
+// ============================= Prartner emails ===========================//
+
+export const accountCredentialsPartner = (
+  partnerId,
+  partnerName,
+  emailId,
+  password,
+  portalLink
+) => {
+  return `<p>Dear <strong>${partnerName}</strong>,</p>
+
+<p>We’re excited to welcome you to the portal team! Your account has been created by the Super Admin, and you are now equipped to manage partner-related tasks within your assigned state.</p>
+<p>Please find your account details below:</p>
+<p><strong>Account Details:</strong></p>
+<ul>
+<li><strong>Partner ID:</strong> ${partnerId} </li>
+<li><strong>Name:</strong> ${partnerName} </li>
+<li><strong>Email ID:</strong> ${emailId} </li>
+<li><strong>Password:</strong> ${password} </li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>
+</ul>
+<p>You can log in using the credentials provided above to start managing tasks and taking actions on behalf of the Super Admin within your assigned state.</p>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Ensure all actions comply with the guidelines provided by the Super Admin</li>
+<li>Your access is state-specific, and all partner-related tasks must be managed accordingly.
+</li>
+</ul>
+<p>For any further assistance, feel free to reach out to <a href="mailto:shweta.dhanerwal@sovportal.in">shweta.dhanerwal@sovportal.in</a> or <a href="mailto:jatin.mehta@sovportal.in">jatin.mehta@sovportal.in</a>.</p>
+
+<p>Thank you for being a valuable part of our team!</p>
+<p>Best regards,</p>
+<p><strong>SOV Portal</strong><br>
+Supporting seamless operations for the portal
+</p>`;
+};
 
 
+export const accountCredentialsPartnerUpdate = (
+  teamMemId,
+  partnerName,
+  emailId,
+  password,
+  portalLink
+) => {
+  return `<p>Dear <strong>${partnerName}</strong>,</p>
+
+<p>We would like to inform you that your partner account details have been updated by the Admin. Please find your updated account details below:</p>
+
+<p><strong>Updated Account Details:</strong></p>
+<ul>
+<li><strong>Partner ID:</strong> ${teamMemId} </li>
+<li><strong>Name:</strong> ${partnerName} </li>
+<li><strong>Email ID:</strong> ${emailId} </li>
+<li><strong>Password:</strong> ${password} </li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>
+</ul>
+<p>Please log in using the updated credentials to continue managing your assigned tasks effectively.</p>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Your access is state-specific, and all partner-related tasks must be managed accordingly.</li>
+</ul>
+<p>For any further assistance, feel free to reach out to <a href="mailto:shweta.dhanerwal@sovportal.in">shweta.dhanerwal@sovportal.in</a> or <a href="mailto:jatin.mehta@sovportal.in">jatin.mehta@sovportal.in</a>.</p>
+
+<p>Thank you for your continued partnership!</p>
+<p>Best regards,</p>
+<p><strong>SOV Portal</strong><br>
+Supporting seamless operations for the portal
+</p>`;
+};
+
+export const accountCredentialsPartnerEmployee = (
+  employeeId,
+  employeeName,
+  emailId,
+  password,
+  portalLink,
+  partnerName,
+  partnerEmail
+) => {
+  return `<p>Dear <strong>${employeeName}</strong>,</p>
+
+<p>We’re excited to welcome you to the team! Your account has been created by ${partnerName}, and you are now equipped to handle portal-related tasks on their behalf.</p>
+<p>Please find your account details below:</p>
+<p><strong>Account Details:</strong></p>
+<ul>
+<li><strong>Employee ID:</strong> ${employeeId} </li>
+<li><strong>Name:</strong> ${employeeName} </li>
+<li><strong>Email ID:</strong> ${emailId} </li>
+<li><strong>Password:</strong> ${password} </li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>
+</ul>
+<p>You can log in using the credentials provided above to start managing tasks and assisting ${partnerName} in portal operations.</p>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>Ensure all actions comply with the guidelines provided by ${partnerName} and the Super Admin</li>
+<li>Your role is to assist in managing partner-related tasks efficiently.
+</li>
+</ul>
+<p>For any further assistance, feel free to reach out to <a href="mailto:${partnerEmail}">${partnerEmail}</a> or <a href="mailto:support@sovportal.in">support@sovportal.in</a>.</p>
+
+<p>Thank you for being a valuable part of our team!</p>
+<p>Best regards,</p>
+<p><strong>SOV Portal</strong><br>
+Supporting seamless operations for the portal
+</p>`;
+};
+
+
+export const accountCredentialsPartnerEmployeeUpdate = (
+  employeeId,
+  employeeName,
+  emailId,
+  password,
+  portalLink,
+  partnerName,
+  partnerEmail
+) => {
+  return `<p>Dear <strong>${employeeName}</strong>,</p>
+
+<p>We’re excited to welcome you to the team! Your account have been updated by ${partnerName}, and you are now equipped to handle portal-related tasks on their behalf.</p>
+<p>Please find your account details below:</p>
+<p><strong>Account Details:</strong></p>
+<ul>
+<li><strong>Employee ID:</strong> ${employeeId} </li>
+<li><strong>Name:</strong> ${employeeName} </li>
+<li><strong>Email ID:</strong> ${emailId} </li>
+<li><strong>Password:</strong> ${password} </li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>
+</ul>
+<p>Please log in using the updated credentials to continue assisting ${partnerName} with portal operations effectively.</p>
+
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>If your password has been changed, ensure you update it securely.</li>
+<li>Make sure all actions comply with the guidelines provided by ${partnerName} and the Super Admin.</li>
+</ul>
+<p>For any further assistance, feel free to reach out to <a href="mailto:${partnerEmail}">${partnerEmail}</a> or <a href="mailto:support@sovportal.in">support@sovportal.in</a>.</p>
+
+<p>Thank you for your continued contribution!</p>
+<p>Best regards,</p>
+<p><strong>SOV Portal</strong><br>
+Supporting seamless operations for the portal
+</p>`;
+};

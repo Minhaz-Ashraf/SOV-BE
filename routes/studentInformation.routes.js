@@ -46,16 +46,13 @@ router
 router.route("/agent-student").get(verifyJwt, getAllAgentStudent);
 router.route("/agent-student-admin").get(verifyAdmin, getAllAgentStudentAdmin);
 router.route("/student-information/:formId").get(verifyJwt, getStudentFormById);
-router
-  .route("/student-information/:id")
-  .delete(verifyJwt, deleteStudentData);
+router.route("/student-information/:id").delete(verifyJwt, deleteStudentData);
 router
   .route("/personal-information/:id")
   .patch(verifyJwt, studentPersonalInformationEdit);
-  router.route("/admin-document/:studentId").get( getAdminDocument)  
+router.route("/admin-document/:studentId").get(getAdminDocument);
 router
   .route("/update-student-reapproval-status/:studentId")
   .put(verifyJwt, updateStudentStatus);
 
-  
 export default router;

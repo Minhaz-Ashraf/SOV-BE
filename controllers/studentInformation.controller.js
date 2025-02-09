@@ -23,6 +23,7 @@ import { Withdrawal } from "../models/withdrawal.model.js";
 import { Ticket } from "../models/ticket.model.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { AirTicketing } from "../models/airTicketingModel.js";
 
 dotenv.config();
 
@@ -518,7 +519,7 @@ const getAllAgentStudent = asyncHandler(async (req, res) => {
   let agentId = req.user.id;
 
   // Check if the user role is authorized
-  if (req.user.role !== "2" && req.user.role !== "0" && req.user.role !== "1") {
+  if (req.user.role !== "2" && req.user.role !== "0" && req.user.role !== "1"&& req.user.role !== "4" && req.user.role !== "5") {
     return res
       .status(403)
       .json(
@@ -612,11 +613,9 @@ const getAllAgentStudent = asyncHandler(async (req, res) => {
 
 const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, searchData } = req.query;
-
   let agentId = req.query.agentId || undefined;
-
-  // Check if the user role is authorized
-  if (req.user.role !== "2" && req.user.role !== "0" && req.user.role !== "1") {
+  const role = req.user.role
+  if (role !== "4" && role !== "0" && role !== "1" && role !== "5") {
     return res
       .status(403)
       .json(
@@ -627,15 +626,11 @@ const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
         )
       );
   }
-
-  // Build initial match query
   let matchQuery = {deleted : false, "pageStatus.status": "completed"};
 
   if(agentId){
     matchQuery.agentId = agentId;
   }
-
-  // Dynamic search query if searchData is provided
   if (searchData) {
     const regex = new RegExp(searchData, "i");
     matchQuery.$or = [
@@ -647,9 +642,8 @@ const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
     ];
   }
 
-  // Use aggregation with a lookup to get applications and count
   const allStudents = await StudentInformation.aggregate([
-    { $match: matchQuery }, // Apply the agentId and deleted filter
+    { $match: matchQuery }, 
     {
       $lookup: {
         from: "institutions",
@@ -671,17 +665,12 @@ const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
     },
   ]);
 
-  // Extract the total count and paginated students data
   const totalRecords = allStudents[0]?.totalCount[0]?.count || 0;
   const students = allStudents[0]?.data || [];
-
-  // Pagination logic
   const totalPages = Math.ceil(totalRecords / limit);
   const currentPage = parseInt(page);
   const prevPage = currentPage > 1 ? currentPage - 1 : null;
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
-
-  // Response if no students found
   if (!students.length) {
     return res
       .status(404)
@@ -697,8 +686,6 @@ const getAllAgentStudentAdmin = asyncHandler(async (req, res) => {
     hasPreviousPage: prevPage !== null,
     hasNextPage: nextPage !== null,
   }
-
-  // Send the response with paginated results
   res.status(200).json(
     new ApiResponse(
       200,
@@ -718,24 +705,22 @@ const getStudentFormById = asyncHandler(async (req, res) => {
   let studentInformation = await StudentInformation.findOne({
     studentId: req.user.id,
   });
-  console.log(req.user.role);
   let getFormId;
 
   if (req.user.role === "3") {
     getFormId = studentInformation._id;
   }
-  if (req.user.role === "2" || req.user.role === "0" || req.user.role === "1"  ) {
+  if (req.user.role === "4" || req.user.role === "0" || req.user.role === "1" || req.user.role === "5"|| req.user.role === "2"  ) {
     studentInformation = await StudentInformation.findById(formId);
   }
 
-  // If student information is not found, return 404
   if (!studentInformation) {
     return res
       .status(404)
       .json(new ApiResponse(404, {}, "Student information not found"));
   }
   const studentFormId =
-    req.user.role === "2" || req.user.role === "0" ? formId : getFormId;
+  (req.user.role === "4" || req.user.role === "0" || req.user.role === "1" || req.user.role === "5" || req.user.role === "2" )   ? formId : getFormId;
     
     const visaApplication = await Institution.findOne({
       studentInformationId: studentFormId,
@@ -845,6 +830,13 @@ const deleteStudentData = asyncHandler(async (req, res) => {
         { $set : { deleted: true } },
         { session }
       );
+
+      await AirTicketing.updateMany(
+        { userId : studentInfo?.studentId }, //student_id
+        { $set : { deleted: true } },
+        { session }
+      );
+
     }else if (studentInfo.agentId) {
       firstName = studentInfo.personalInformation.firstName;
       email = studentInfo.personalInformation.email;

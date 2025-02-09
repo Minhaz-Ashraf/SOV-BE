@@ -382,9 +382,7 @@ const registerReferences = asyncHandler(async (req, res) => {
 
 
 const getCompanyData = asyncHandler(async (req, res) => {
-  if (req.user.role !== '2') {
-    return res.status(403).json(new ApiResponse(403, {}, "You are not authorized to view company data"));
-  }
+
 
   const company = await Company.findOne({ agentId: req.user.id });
   if (!company) {
@@ -398,15 +396,16 @@ const getCompanyData = asyncHandler(async (req, res) => {
 
   const agentEmail = agent.accountDetails?.founderOrCeo?.email || "N/A";
   const agentPhone = agent.accountDetails?.founderOrCeo?.phone || "N/A";
-
-  // Combine company data with agentEmail and agentPhone
+  const agentState = agent?.companyDetails?.province|| "N/A";
+  const agentCountry = agent?.companyDetails?.country || "NA"
   const responseData = {
     ...company.toObject(), // Convert the company document to a plain object
     agentEmail,
     agentPhone,
+    agentState,
+    agentCountry
   };
 
-  // Return the combined data in the response
   return res.status(200).json(new ApiResponse(200, responseData, "Company data fetched successfully"));
 });
 

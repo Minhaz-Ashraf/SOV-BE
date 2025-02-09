@@ -44,7 +44,11 @@ class SocketService {
       // Join a room specific to the userId
       socket.join(`USER_${decryptedDetails._id}`);
       console.log(`Socket joined room USER_${decryptedDetails._id}`);
-      if(decryptedDetails.role === "0" || decryptedDetails.role === "1"){
+      const shouldJoinAdminRoom = 
+      (decryptedDetails.role === "0" || decryptedDetails.role === "1" || decryptedDetails.role === "4" ||decryptedDetails.role === "5" ) ||
+      ((decryptedDetails.role === "2" || decryptedDetails.role === "3") && decryptedDetails.type === "admin");
+    
+      if (shouldJoinAdminRoom) {
         socket.join("GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS");
         console.log(`Socket joined room GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`);
       }
@@ -60,7 +64,7 @@ class SocketService {
       // Listen to specific notification events
 
       socket.on("NOTIFICATION_STUDENT_TO_ADMIN", async (notificationData) => {
-        const { title, message, recieverId, path, pathData} = notificationData;
+        const { title, message, recieverId, path, pathData, country, state} = notificationData;
         // here it is
         const formattedNotification = {
           title : title?.trim(),
@@ -74,7 +78,9 @@ class SocketService {
             isGroup: true,
           },
           pathData: pathData || {},
-          routePath: path
+          routePath: path,
+          state: state,
+          country: country
         };
         const createdNotification = await createNotification(formattedNotification);
         this.socketServer
@@ -85,7 +91,7 @@ class SocketService {
       });
 
       socket.on("NOTIFICATION_AGENT_TO_ADMIN", async (notificationData) => {
-        const { title, message, recieverId, path, pathData} = notificationData;
+        const { title, message, recieverId, path, pathData, country, state} = notificationData;
         // here it is
         const formattedNotification = {
           title : title?.trim(),
@@ -99,7 +105,9 @@ class SocketService {
             isGroup: true,
           },
           pathData: pathData || {},
-          routePath: path
+          routePath: path,
+          state: state,
+          country: country
         };
         const createdNotification = await createNotification(formattedNotification);
         this.socketServer
@@ -111,7 +119,7 @@ class SocketService {
 
       // Admin to Student
       socket.on("NOTIFICATION_ADMIN_TO_STUDENT", async (notificationData) => {
-        const { title, message, recieverId, path, pathData} = notificationData;
+        const { title, message, recieverId, path, pathData, country, state} = notificationData;
         // here it is
         const formattedNotification = {
           title : title?.trim(),
@@ -125,7 +133,9 @@ class SocketService {
             isGroup: false,
           },
           pathData: pathData || {},
-          routePath: path
+          routePath: path,
+          state: state,
+          country: country
         };
         
         const createdNotification = await createNotification(formattedNotification);
@@ -138,7 +148,7 @@ class SocketService {
 
       // Admin to Agent
       socket.on("NOTIFICATION_ADMIN_TO_AGENT", async (notificationData) => {
-        const { title, message, recieverId, path, pathData} = notificationData;
+        const { title, message, recieverId, path, pathData, country, state} = notificationData;
         // here it is
         const formattedNotification = {
           title : title?.trim(),
@@ -152,7 +162,9 @@ class SocketService {
             isGroup: false,
           },
           pathData: pathData || {},
-          routePath: path
+          routePath: path,
+          state: state,
+          country: country
         };
         const createdNotification = await createNotification(formattedNotification);
         this.socketServer
@@ -162,9 +174,9 @@ class SocketService {
         // console.log("Notification data from admin to agent:", createdNotification);
       });
 
-      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async ({page, limit}) => {
+      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async ({page, limit, country, state}) => {
         
-        const notifications = await getNotificationsForAdmin(page, limit);
+        const notifications = await getNotificationsForAdmin(page, limit, country, state);
 
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)

@@ -60,21 +60,23 @@ export const markNotificationAsRead = async (notificationId) => {
   }
 };
 
-export const getNotificationsForAdmin = async ( page = 1, limit = 10 ) => {
+export const getNotificationsForAdmin = async ( page = 1, limit = 10, country, state ) => {
   try {
     const skip = (page - 1) * limit;
-    const notifications = await Notifications.find({
+    const query = {
       "recipient.userId": { $exists: false },
       "recipient.role": "0",
-    })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-
-    const totalNotifications = await Notifications.countDocuments({
-      "recipient.userId": { $exists: false },
-      "recipient.role": "0",
-    });
+    };
+    
+    if (country) query.country = country;
+    if (state) query.state = state;
+    
+    const notifications = await Notifications.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    const totalNotifications = await Notifications.countDocuments(query);
     const totalPages = Math.ceil(totalNotifications / limit);
 
     const nextPage = page < totalPages ? page + 1 : null;
@@ -196,6 +198,8 @@ export const createNotification = async (notification) => {
       isRead: false,
       pathData: notification.pathData || {},
       routePath: notification.routePath || "/",
+      state: notification.state,
+      country: notification.country
     });
 
     newNotification = await newNotification.save();
