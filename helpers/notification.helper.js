@@ -1,6 +1,6 @@
 import { Notifications } from "../models/notification.model.js";
 
-export const markAllNotificationsAsSeen = async (recieverId, type) => {
+export const markAllNotificationsAsSeen = async (recieverId, type, country, state, isPartner) => {
   try {
     let query;
 
@@ -11,6 +11,14 @@ export const markAllNotificationsAsSeen = async (recieverId, type) => {
       // If senderId is undefined, target notifications with no recipient.userId
       query = { "recipient.userId": { $exists: false } };
     }
+    // If country or state are provided, add them to the query
+    if (country) {
+      query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
+    }
+
+    if (state) {
+      query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match
+    }
 
     let change = {}
 
@@ -18,6 +26,10 @@ export const markAllNotificationsAsSeen = async (recieverId, type) => {
       change = { status: "seen" };
     }else {
       change = { isRead: true, status: "seen" };
+    }
+
+    if(isPartner === "partner"){
+      change.isSeenBy = "partner";
     }
 
     const result = await Notifications.updateMany(query, change);
@@ -60,16 +72,27 @@ export const markNotificationAsRead = async (notificationId) => {
   }
 };
 
-export const getNotificationsForAdmin = async ( page = 1, limit = 10, country, state ) => {
+export const getNotificationsForAdmin = async ( page = 1, limit = 10, country, state, adminRole ) => {
   try {
     const skip = (page - 1) * limit;
-    const query = {
+    if ((adminRole === "4" || adminRole === "5") && !country && !state) {
+      return { notifications: [], currentPage: page, totalPages: 0, totalNotifications: 0, nextPage: null, prevPage: null, hasNextPage: false, hasPrevPage: false };
+    }
+
+    let query = {
       "recipient.userId": { $exists: false },
       "recipient.role": "0",
     };
-    
-    if (country) query.country = country;
-    if (state) query.state = state;
+
+    if (adminRole === "4" || adminRole === "5") {
+      if (country) {
+        query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
+      }
+
+      if (state) {
+        query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match
+      }
+    }
     
     const notifications = await Notifications.find(query)
       .sort({ createdAt: -1 })
@@ -155,13 +178,30 @@ export const countUnseenForUser = async (id) => {
   }
 };
 
-export const countUnseenForAdmin = async () => {
+export const countUnseenForAdmin = async (country,state, isPartner) => {
   try {
-    const count = await Notifications.countDocuments({
+
+    let query = {
       "recipient.userId": { $exists: false },
       "recipient.role": "0",
-      "status": "unseen"
-    });
+    };
+
+    if(isPartner === "partner"){
+      query.isSeenBy = {$exists : false};
+    }else{
+      query.status = "unseen"
+    }
+
+    // If country or state are provided, add them to the query
+    if (country) {
+      query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
+    }
+
+    if (state) {
+      query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match
+    }
+
+    const count = await Notifications.countDocuments(query);
 
     if (!count) {
       console.error("notifications for users not found!");
@@ -198,8 +238,8 @@ export const createNotification = async (notification) => {
       isRead: false,
       pathData: notification.pathData || {},
       routePath: notification.routePath || "/",
-      state: notification.state,
-      country: notification.country
+      state: notification?.state?.toLowerCase(),
+      country: notification?.country?.toLowerCase()
     });
 
     newNotification = await newNotification.save();

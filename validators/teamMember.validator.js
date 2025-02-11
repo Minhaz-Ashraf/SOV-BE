@@ -9,7 +9,6 @@ export const residenceAddressSchema = z.object({
   });
 
 export const adminSchema = z.object({
-  profilePicture: z.string().url().optional(),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   dob: z

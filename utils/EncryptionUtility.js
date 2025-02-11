@@ -24,7 +24,7 @@ export const encryptData = (dataToEncrypt) => {
 
 export const decryptData = (data) => {
     try {
-        const [iv, encrypted] = data.split(':');
+        const [iv, encrypted] = data?.split(':');
         const decipher = crypto.createDecipheriv(algorithm, key, Buffer.from(iv, 'hex'));
         let decrypted = decipher.update(encrypted, 'hex', 'utf-8');
         decrypted += decipher.final('utf-8');

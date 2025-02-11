@@ -1188,6 +1188,10 @@ export const accountCredentialsPartnerUpdate = (
   password,
   portalLink
 ) => {
+  const passwordItem = password
+  ? `<li><strong>Password:</strong> ${password}</li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>`
+  : `<li><strong>Portal Link:</strong> ${portalLink} </li>`;
   return `<p>Dear <strong>${partnerName}</strong>,</p>
 
 <p>We would like to inform you that your partner account details have been updated by the Admin. Please find your updated account details below:</p>
@@ -1197,7 +1201,7 @@ export const accountCredentialsPartnerUpdate = (
 <li><strong>Partner ID:</strong> ${teamMemId} </li>
 <li><strong>Name:</strong> ${partnerName} </li>
 <li><strong>Email ID:</strong> ${emailId} </li>
-<li><strong>Password:</strong> ${password} </li>
+${passwordItem}
 <li><strong>Portal Link:</strong> ${portalLink} </li>
 </ul>
 <p>Please log in using the updated credentials to continue managing your assigned tasks effectively.</p>
@@ -1263,6 +1267,10 @@ export const accountCredentialsPartnerEmployeeUpdate = (
   partnerName,
   partnerEmail
 ) => {
+  const passwordItem = password
+  ? `<li><strong>Password:</strong> ${password}</li>
+<li><strong>Portal Link:</strong> ${portalLink} </li>`
+  : `<li><strong>Portal Link:</strong> ${portalLink} </li>`;
   return `<p>Dear <strong>${employeeName}</strong>,</p>
 
 <p>We’re excited to welcome you to the team! Your account have been updated by ${partnerName}, and you are now equipped to handle portal-related tasks on their behalf.</p>
@@ -1272,7 +1280,7 @@ export const accountCredentialsPartnerEmployeeUpdate = (
 <li><strong>Employee ID:</strong> ${employeeId} </li>
 <li><strong>Name:</strong> ${employeeName} </li>
 <li><strong>Email ID:</strong> ${emailId} </li>
-<li><strong>Password:</strong> ${password} </li>
+${passwordItem}
 <li><strong>Portal Link:</strong> ${portalLink} </li>
 </ul>
 <p>Please log in using the updated credentials to continue assisting ${partnerName} with portal operations effectively.</p>

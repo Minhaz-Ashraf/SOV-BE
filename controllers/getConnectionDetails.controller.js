@@ -62,7 +62,9 @@ const getConnectionDetailsAdmin = asyncHandler(async (req, res) => {
       name: `${admin.firstName} ${admin.lastName}`,
       role: admin.role,
       _id: admin._id,
-      type: "admin"
+      type: "admin",
+      country: data?.residenceAddress?.country,
+      state: data?.residenceAddress?.state
     };
   
     // Encrypt the selected data

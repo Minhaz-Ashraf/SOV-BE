@@ -31,7 +31,7 @@ const adminSchema = new Schema(
     },
     role: {
       type: String,
-      enum:["0", "1", "2", "3"]
+      enum:["0", "1", "2", "3", "4", "5"]
     },
     isDeleted:{
       type: Boolean,

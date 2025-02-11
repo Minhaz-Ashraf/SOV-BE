@@ -46,6 +46,10 @@ const partnerTeamSchema = new Schema(
       type: String,
       required: true,
     },
+    regionData:{
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

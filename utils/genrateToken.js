@@ -6,11 +6,15 @@ export const generateTokens = (user) => {
     email: user.email,
     role: user.role,
   };
-  // Generate the access token
+  if(user.country){
+    payload.country = user.country;
+  }
+  if(user.state){
+    payload.state = user.state;
+  }
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
   });
-
 
   // Generate the refresh token
   const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {

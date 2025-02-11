@@ -44,13 +44,16 @@ class SocketService {
       // Join a room specific to the userId
       socket.join(`USER_${decryptedDetails._id}`);
       console.log(`Socket joined room USER_${decryptedDetails._id}`);
-      const shouldJoinAdminRoom = 
-      (decryptedDetails.role === "0" || decryptedDetails.role === "1" || decryptedDetails.role === "4" ||decryptedDetails.role === "5" ) ||
-      ((decryptedDetails.role === "2" || decryptedDetails.role === "3") && decryptedDetails.type === "admin");
+      const shouldJoinAdminRoom = (decryptedDetails.role === "0" || decryptedDetails.role === "1") 
+      const shouldJoinPartnerRoom =  (decryptedDetails.role === "4" || decryptedDetails.role === "5")
     
       if (shouldJoinAdminRoom) {
         socket.join("GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS");
         console.log(`Socket joined room GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`);
+      }
+      if (shouldJoinPartnerRoom) {
+        socket.join("GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS");
+        console.log(`Socket joined room GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`);
       }
 
       socket.on("error", (error) => {
@@ -83,9 +86,13 @@ class SocketService {
           country: country
         };
         const createdNotification = await createNotification(formattedNotification);
+        //this is for sending single notification data
         this.socketServer
         .to("GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS")
         .emit("GLOBAL_NOTIFICATION_ADMIN_ALERT", createdNotification);
+        this.socketServer
+        .to("GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS")
+        .emit("GLOBAL_NOTIFICATION_PARTNER_ALERT", createdNotification);
         emitOnMessage(socket, "NOTIFICATION_STUDENT_TO_ADMIN", createdNotification);
         // console.log("Notification data from student to admin:", notificationData);
       });
@@ -113,6 +120,9 @@ class SocketService {
         this.socketServer
         .to("GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS")
         .emit("GLOBAL_NOTIFICATION_ADMIN_ALERT", createdNotification);
+        this.socketServer
+        .to("GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS")
+        .emit("GLOBAL_NOTIFICATION_PARTNER_ALERT", createdNotification);
         emitOnMessage(socket, "NOTIFICATION_AGENT_TO_ADMIN", createdNotification);
         // console.log("Notification data from agent to admin:", createdNotification);
       });
@@ -174,9 +184,10 @@ class SocketService {
         // console.log("Notification data from admin to agent:", createdNotification);
       });
 
-      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async ({page, limit, country, state}) => {
-        
-        const notifications = await getNotificationsForAdmin(page, limit, country, state);
+      socket.on("GET_NOTIFICATIONS_FOR_ADMIN", async ({page, limit}) => {
+        console.log("GET_NOTIFICATIONS_FOR_ADMIN is called");
+        if (!["0", "1"].includes(decryptedDetails.role)) return;
+        const notifications = await getNotificationsForAdmin(page, limit);
 
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
@@ -203,10 +214,15 @@ class SocketService {
           this.socketServer
           .to(`USER_${decryptedDetails._id}`)
           .emit("GET_UNREAD_COUNT", unreadCount);
-        }else{
+        }else if(state === "emitForAdmin"){
           unreadCount = await countUnseenForAdmin();
           this.socketServer
           .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
+          .emit("GET_UNREAD_COUNT", unreadCount);
+        }else {
+          unreadCount = await countUnseenForAdmin(decryptedDetails?.country || undefined, decryptedDetails?.state || undefined, "partner");
+          this.socketServer
+          .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
           .emit("GET_UNREAD_COUNT", unreadCount);
         }
         emitOnMessage(socket, "GET_UNREAD_COUNT", unreadCount);
@@ -214,6 +230,7 @@ class SocketService {
       });
 
       socket.on("NOTIFICATION_SEEN_BY_ADMIN", async () => {
+        if (!["0", "1"].includes(decryptedDetails.role)) return;
         // update seen status
         const notification = await markAllNotificationsAsSeen(undefined, "seen");
         this.socketServer
@@ -234,6 +251,7 @@ class SocketService {
       });
       socket.on("NOTIFICATION_ALL_READ_BY_ADMIN", async () => {
         // update seen status
+        if (!["0", "1"].includes(decryptedDetails.role)) return;
         const notification = await markAllNotificationsAsSeen(undefined, "read");
         this.socketServer
         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
@@ -254,7 +272,6 @@ class SocketService {
 
       socket.on("NOTIFICATION_IS_READ", async (notificationData) => {
         // update read status
-        //yet to think how it will work
         const { _id, byAdmin} = notificationData;
         const notification = await markNotificationAsRead(_id);
         if(!byAdmin) {
@@ -264,6 +281,9 @@ class SocketService {
         }else {
           this.socketServer
          .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
+         .emit("NOTIFICATION_READ_STATUS_UPDATE", _id);
+          this.socketServer
+         .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
          .emit("NOTIFICATION_READ_STATUS_UPDATE", _id);
         }
         emitOnMessage(socket, "NOTIFICATION_SEEN_STATUS_UPDATE", "status updated successfully");
@@ -294,6 +314,42 @@ class SocketService {
         console.log("to the agent/student for token deletion", reason);
       });
 
+
+      //partner changes
+
+      socket.on("NOTIFICATION_SEEN_BY_PARTNER", async () => {
+        if (!["4", "5"].includes(decryptedDetails.role)) return;
+        // update seen status
+        const notification = await markAllNotificationsAsSeen(undefined, "seen", decryptedDetails?.country || undefined, decryptedDetails?.state || undefined, "partner");
+        this.socketServer
+        .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
+        .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
+        emitOnMessage(socket, "NOTIFICATION_SEEN_BY_ADMIN", "status seen updated successfully for admin");
+        // console.log("NOTIFICATION_SEEN_BY_ADMIN:", notification);
+      });
+
+      socket.on("NOTIFICATION_ALL_READ_BY_PARTNER", async () => {
+        if (!["4", "5"].includes(decryptedDetails.role)) return;
+        // update seen status
+        const notification = await markAllNotificationsAsSeen(undefined, "read", decryptedDetails?.country || undefined, decryptedDetails?.state || undefined, "partner");
+        this.socketServer
+        .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
+        .emit("NOTIFICATION_SEEN_STATUS_UPDATE");
+        emitOnMessage(socket, "NOTIFICATION_ALL_READ_BY_ADMIN", "status all read updated successfully for admins");
+        // console.log("Notification all read for admin:", notification);
+      });
+
+      socket.on("GET_NOTIFICATIONS_FOR_PARTNER", async ({page, limit}) => {
+        console.log("GET_NOTIFICATIONS_FOR_PARTNER is called");
+        if (!["4", "5"].includes(decryptedDetails.role)) return;
+        const notifications = await getNotificationsForAdmin(page, limit, decryptedDetails?.country || undefined, decryptedDetails?.state || undefined, decryptedDetails.role);
+
+        this.socketServer
+        .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
+        .emit("GET_NOTIFICATIONS_FOR_PARTNER", notifications);
+        emitOnMessage(socket, "GET_NOTIFICATIONS_FOR_PARTNER", notifications);
+        // console.log("Notification data from admin to agent:", notifications);
+      });
     });
   };
 }
