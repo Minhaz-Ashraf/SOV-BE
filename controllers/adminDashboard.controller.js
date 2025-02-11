@@ -358,27 +358,35 @@ const getAllApplications = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const { residenceAddress, role, regionData } = req.user;
+  const location = role === "4" ? residenceAddress?.state : role === "5" ? regionData : null;
   const query = { deleted: false };
   const andConditions = [];
-  const { residenceAddress, role, regionData} = req.user;
-  const location =  role === "4" ?  residenceAddress?.state  : role === "5" ? regionData : null;
 
   if (role === "4" || role === "5") {
-    const userIds = await Institution.find({}, "userId").lean();
-    const userIdList = userIds.map(({ userId }) => userId);
+    const institutionUsers = await Institution.find({}, "userId studentInformationId").lean();
 
-    const [students, agents] = await Promise.all([
-      StudentInformation.find({ studentId: { $in: userIdList }, "residenceAddress.state": location }, "studentId").lean(),
-      Company.find({ agentId: { $in: userIdList }, "companyDetails.province": location }, "agentId").lean(),
-    ]);
+    const matchingUserIds = [];
+    const matchingStudentIds = [];
 
-    // Step 3: Extract filtered user IDs
-    const filteredUserIds = [
-      ...students.map((s) => s.studentId),
-      ...agents.map((a) => a.agentId),
-    ];
+    for (const inst of institutionUsers) {
+      const agent = await Company.findOne({ _id: inst.userId, "companyDetails.province": location }).lean();
+      const student = await StudentInformation.findOne({ _id: inst.studentInformationId, "residenceAddress.state": location }).lean();
 
-    andConditions.push({ userId: { $in: filteredUserIds } });
+      if (agent) matchingUserIds.push(inst.userId);
+      if (student) matchingStudentIds.push(inst.studentInformationId);
+    }
+
+    if (matchingUserIds.length > 0 || matchingStudentIds.length > 0) {
+      andConditions.push({
+        $or: [
+          { userId: { $in: matchingUserIds } },
+          { studentInformationId: { $in: matchingStudentIds } }
+        ]
+      });
+    } else {
+      return res.status(200).json({ total: 0, applications: [] });
+    }
   }
 
   if (req.query.status) {
@@ -417,7 +425,6 @@ const getAllApplications = asyncHandler(async (req, res) => {
     const exactDate = new Date(req.query.date);
     const startOfDay = new Date(exactDate.setHours(0, 0, 0, 0));
     const endOfDay = new Date(exactDate.setHours(23, 59, 59, 999));
-
     andConditions.push({ createdAt: { $gte: startOfDay, $lte: endOfDay } });
   }
 
@@ -425,7 +432,6 @@ const getAllApplications = asyncHandler(async (req, res) => {
     query.$and = andConditions;
   }
 
-  // Fetch applications in bulk with pagination
   const applications = await Institution.find(query)
     .select("-__v")
     .sort({ createdAt: -1 })
@@ -435,58 +441,64 @@ const getAllApplications = asyncHandler(async (req, res) => {
 
   const totalApplications = await Institution.countDocuments(query);
 
-  // Fetch agent & student data in bulk to avoid multiple queries in loop
-  const userIdsInApplications = applications.map((app) => app.userId);
-  const [agents, students] = await Promise.all([
-    Company.find({ agentId: { $in: userIdsInApplications } }).lean(),
-    StudentInformation.find({ studentId: { $in: userIdsInApplications } }).lean(),
-  ]);
+  const transformedApplications = await Promise.all(
+    applications.map(async (app) => {
+      const userId = app.userId;
+      const userType = app.studentInformationId ? "student" : "agent";
+      const studentMongooseId = app.studentInformationId;
 
-  const agentMap = Object.fromEntries(agents.map((a) => [a.agentId, a]));
-  const studentMap = Object.fromEntries(students.map((s) => [s.studentId, s]));
+      const result = {
+        userId,
+        userType,
+        institutionId: app._id,
+        applicationId: app.applicationId,
+        status: null,
+        message: null,
+        agentName: null,
+        institution: null,
+        studentInformationId: studentMongooseId,
+        createdAt: app.teamActivity,
+      };
 
-  const transformedApplications = applications.map((app) => {
-    const userId = app.userId;
-    const agent = agentMap[userId];
-    const student = studentMap[userId];
+      const findAgent = await Company.findOne({ agentId: userId }).lean();
+      const findStudent = !findAgent && (await StudentInformation.findOne({ studentId: userId }).lean());
 
-    const result = {
-      userId,
-      userType: student ? "student" : "agent",
-      institutionId: app._id,
-      applicationId: app.applicationId,
-      status: null,
-      message: null,
-      agentName: agent ? agent.primaryContact?.firstName : null,
-      institution: null,
-      studentInformationId: app.studentInformationId,
-      createdAt: app.teamActivity,
-      customUserId: agent ? agent.agId : student ? student.stId : null,
-      studentId: student ? student.stId : null,
-    };
+      result.customUserId = findAgent ? findAgent.agId : findStudent ? findStudent.stId : null;
 
-    if (app.offerLetter?.personalInformation) {
-      result.fullName = app.offerLetter.personalInformation.fullName;
-      result.type = "offerLetter";
-      result.status = app.offerLetter.status;
-      result.message = app.offerLetter.message;
-      result.institution = app.offerLetter.preferences.institution;
-    } else if (app.courseFeeApplication?.personalDetails) {
-      result.fullName = app.courseFeeApplication.personalDetails.fullName;
-      result.type = "courseFeeApplication";
-      result.status = app.courseFeeApplication.status;
-      result.message = app.courseFeeApplication.message;
-    } else if (app.visa?.personalDetails) {
-      result.fullName = app.visa.personalDetails.fullName;
-      result.country = app.visa.country;
-      result.type = "visa";
-      result.status = app.visa.status;
-      result.message = app.visa.message;
-    }
+      if (findAgent) {
+        const agentData = await Company.findOne({ agentId: userId });
+        if (agentData) {
+          result.agentName = agentData.primaryContact?.firstName || null;
+        }
+      }
 
-    return result.fullName ? result : null;
-  }).filter(Boolean);
+      const studentData = await StudentInformation.findOne({ _id: studentMongooseId }).lean();
+      result.studentId = studentData ? studentData.stId : null;
 
+      if (app.offerLetter?.personalInformation) {
+        result.fullName = app.offerLetter.personalInformation.fullName;
+        result.type = "offerLetter";
+        result.status = app.offerLetter.status;
+        result.message = app.offerLetter.message;
+        result.institution = app.offerLetter.preferences.institution;
+      } else if (app.courseFeeApplication?.personalDetails) {
+        result.fullName = app.courseFeeApplication.personalDetails.fullName;
+        result.type = "courseFeeApplication";
+        result.status = app.courseFeeApplication.status;
+        result.message = app.courseFeeApplication.message;
+      } else if (app.visa?.personalDetails) {
+        result.fullName = app.visa.personalDetails.fullName;
+        result.country = app.visa.country;
+        result.type = "visa";
+        result.status = app.visa.status;
+        result.message = app.visa.message;
+      }
+
+      return result.fullName ? result : null;
+    })
+  );
+
+  const filteredApplications = transformedApplications.filter(Boolean);
   const totalPages = Math.ceil(totalApplications / limit);
 
   res.status(200).json({
@@ -496,10 +508,9 @@ const getAllApplications = asyncHandler(async (req, res) => {
     nextPage: page < totalPages ? page + 1 : null,
     totalPages,
     limit,
-    applications: transformedApplications,
+    applications: filteredApplications,
   });
 });
-
 
 const getAllApplicationsForSubadmin = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
