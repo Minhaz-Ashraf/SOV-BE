@@ -401,7 +401,7 @@ const addTeamMember = asyncHandler(async (req, res) => {
     4: {
       template: accountCredentialsPartner,
       url: "https://sovportal.in/province/login",
-      subject: ":Portal Account Credentials – Welcome to the Partner Team",
+      subject: "Portal Account Credentials – Welcome to the Partner Team",
     },
     5: {
       template: accountCredentialsPartnerEmployee,

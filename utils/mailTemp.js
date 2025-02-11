@@ -1202,7 +1202,6 @@ export const accountCredentialsPartnerUpdate = (
 <li><strong>Name:</strong> ${partnerName} </li>
 <li><strong>Email ID:</strong> ${emailId} </li>
 ${passwordItem}
-<li><strong>Portal Link:</strong> ${portalLink} </li>
 </ul>
 <p>Please log in using the updated credentials to continue managing your assigned tasks effectively.</p>
 
@@ -1281,7 +1280,6 @@ export const accountCredentialsPartnerEmployeeUpdate = (
 <li><strong>Name:</strong> ${employeeName} </li>
 <li><strong>Email ID:</strong> ${emailId} </li>
 ${passwordItem}
-<li><strong>Portal Link:</strong> ${portalLink} </li>
 </ul>
 <p>Please log in using the updated credentials to continue assisting ${partnerName} with portal operations effectively.</p>
 
