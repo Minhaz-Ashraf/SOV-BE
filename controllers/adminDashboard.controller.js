@@ -409,34 +409,54 @@ const getAllApplications = asyncHandler(async (req, res) => {
     const endOfDay = new Date(exactDate.setHours(23, 59, 59, 999));
     andConditions.push({ createdAt: { $gte: startOfDay, $lte: endOfDay } });
   }
+// Role 4 & 5: Additional filtering based on Agent and StudentInformation
+if (role === "4" || role === "5") {
+  // Find matching agents based on location
+  const matchingAgents = await Agent.find({ "companyDetails.province": location })
+    .select("_id")
+    .lean();
+  const matchingAgentIds = matchingAgents.map(agent => agent._id.toString());
+  // Find matching students based on residenceAddress.state
+  const matchingStudents = await StudentInformation.find({
+    $or: [
+      { "residenceAddress.state": location },
+      { agentId: { $in: matchingAgentIds } } // Match agentId with found agent IDs
+    ]
+  })
+    .select("_id")
+    .lean();
+  const matchingStudentIds = matchingStudents.map(student => student._id.toString());
+  console.log(matchingStudentIds, "agentId", "location", location, role)
 
-  // Role 4 & 5: Additional filtering based on Agent and StudentInformation
-  if (role === "4" || role === "5") {
-    const institutions = await Institution.find(query).select("userId studentInformationId").lean();
+  // Now find institutions with matched agents and students
+  const institutions = await Institution.find({
+    $or: [
+      { userId: { $in: matchingAgentIds } },
+      { studentInformationId: { $in: matchingStudentIds } }
+    ],
+    deleted: false
+  })
+    .select("userId studentInformationId")
+    .lean();
+    console.log(institutions, "Inst")
+  // Extract institution userIds and studentInformationIds
+  const institutionUserIds = institutions.map(inst => inst.userId);
+  const institutionStudentIds = institutions.map(inst => inst.studentInformationId).filter(Boolean);
 
-    const userIds = institutions.map((inst) => inst.userId); // userId is a string
-    const studentIds = institutions.map((inst) => inst.studentInformationId).filter(Boolean); // studentInformationId is ObjectId
+  // Add filtering condition to query
+  andConditions.push({
+    $or: [
+      { userId: { $in: institutionUserIds } },
+      { studentInformationId: { $in: institutionStudentIds } }
+    ]
+  });
+}
 
-    // Match userId with _id in Agent and location with companyDetails.province
-    const matchingAgents = await Agent.find({ _id: { $in: userIds }, "companyDetails.province": location })
-      .select("_id")
-      .lean();
-    const matchingAgentIds = matchingAgents.map((agent) => agent._id.toString());
+// Apply conditions if any filters are present
+if (andConditions.length > 0) {
+  query.$and = andConditions;
+}
 
-    // Match studentInformationId with _id in StudentInformation and match residenceAddress.state with location
-    const matchingStudents = await StudentInformation.find({ _id: { $in: studentIds }, "residenceAddress.state": location })
-      .select("_id")
-      .lean();
-    const matchingStudentIds = matchingStudents.map((student) => student._id.toString());
-
-    // Update the query to only include matched applications
-    andConditions.push({ $or: [{ userId: { $in: matchingAgentIds } }, { studentInformationId: { $in: matchingStudentIds } }] });
-  }
-
-  // Apply conditions if any filters are present
-  if (andConditions.length > 0) {
-    query.$and = andConditions;
-  }
 
   // Fetch applications with optimized pagination
   const applications = await Institution.find(query)
