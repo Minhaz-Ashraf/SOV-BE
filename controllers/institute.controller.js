@@ -363,10 +363,16 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
   }
 
   if (popularCourses) {
-    const regex = new RegExp(popularCourses, "i");
+    const sanitizedPopularCourses = popularCourses
+      .trim()
+      .replace(/\u00A0/g, " ") 
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") 
+      .replace(/\s+/g, "\\s*");
+  
+    const regex = new RegExp(sanitizedPopularCourses, "i");
     matchQuery.popularCourses = regex;
   }
-
+  
   if (country) {
     const regex = new RegExp(country, "i");
     matchQuery.country = regex;
