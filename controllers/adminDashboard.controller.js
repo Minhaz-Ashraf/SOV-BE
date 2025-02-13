@@ -485,7 +485,6 @@ const getAllApplications = asyncHandler(async (req, res) => {
     .select("firstName lastName residenceAddress.state")
     .lean();
   const mappedData = new Map();
-
   partners.forEach((partner) => {
     const stateKey = String(partner.residenceAddress?.state || "")
       .trim()
@@ -1365,14 +1364,14 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
 
     if (role === "4" || role === "5") {
       const agentIds = await Agent.find({
-        "companyDetails.province": location,
+        "companyDetails.province": { $regex: location, $options: "i" },
         role: "2",
         deleted: false,
       }).distinct("_id");
 
       const studentIds = await StudentInformation.find({
         studentId: { $exists: true },
-        "residenceAddress.state": location,
+        "residenceAddress.state":  { $regex: location, $options: "i" },
         deleted: false,
       }).distinct("studentId");
 
@@ -1393,6 +1392,18 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
           ...baseMatch,
           userId: { $in: extractedIds },
         };
+      } else {
+        return res.status(200).json(
+          new ApiResponse(
+            200,
+            {
+              totalCount : 0,
+              pendingCount : 0,
+              approvedCount : 0,
+            },
+            "Application counts retrieved successfully (Location-wise for Role 4 & 5)"
+          )
+        );
       }
     }
 
@@ -1656,17 +1667,12 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
 
   if (role === "4" || role === "5") {
     if (location) {
-      const agentIds = await Company.find({}).select("agentId").lean();
-      const validAgentIds = [];
-
-      for (const { agentId } of agentIds) {
-        const agent = await Agent.findById(agentId)
-          .select("companyDetails.province")
-          .lean();
-        if (agent?.companyDetails.province === location) {
-          validAgentIds.push(agentId);
-        }
-      }
+      let agentStringIds = [];
+      const agentIds  = await Agent.find({
+        "companyDetails.province": { $eq: location },
+        role: "2",
+      }).distinct("_id");
+      agentStringIds = [...agentIds].map(id => id.toString());
 
       agentCondition.agentId = { $in: agentStringIds };
       studentCondition.$or = [
@@ -3085,6 +3091,19 @@ const getTotalApplicationOverviewForAdmin = asyncHandler(async (req, res) => {
           ...match,
           userId: { $in: extractedIds },
         }; // Update baseMatch dynamically
+      }else {
+        return res.status(200).json(
+          new ApiResponse(
+            200,
+            {
+              totalApplications : 0,
+              offerLetterCount : 0,
+              courseFeeApplication : 0,
+              visaCount : 0,
+            },
+            "Application counts fetched successfully"
+          )
+        );
       }
     }
     const totalApplications = await Institution.countDocuments(match);
@@ -3286,6 +3305,16 @@ const getApplicationMonthlyCount = asyncHandler(async (req, res) => {
           ...matchFilter,
           userId: { $in: extractedIds },
         };
+      }else {
+        return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { applicationCounts: [] },
+            "Application monthly count retrieved successfully (Location-wise for Role 4 & 5)"
+          )
+        );
       }
     }
 
