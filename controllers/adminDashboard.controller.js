@@ -43,6 +43,7 @@ import { restoreDeletedStatus } from "../helpers/restoreDeletedStatus.js";
 import { AirTicketing } from "../models/airTicketingModel.js";
 import { Partner } from "../models/Partner.model.js";
 import { Admin } from "../models/admin.model.js";
+import { getFirstWord } from "../helpers/commonfunction.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -489,11 +490,11 @@ const getAllApplications = asyncHandler(async (req, res) => {
     const stateKey = String(partner.residenceAddress?.state || "")
       .trim()
       .toLowerCase();
-    const fullName = `${partner.firstName} ${partner.lastName}`;
+    const fullName = `${partner.firstName} ${getFirstWord(partner.lastName)}`;
 
     if (stateKey) {
       mappedData.set(stateKey, fullName);
-    }
+    } 
   });
 
   const transformedApplications = await Promise.all(
