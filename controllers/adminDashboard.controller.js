@@ -43,7 +43,7 @@ import { restoreDeletedStatus } from "../helpers/restoreDeletedStatus.js";
 import { AirTicketing } from "../models/airTicketingModel.js";
 import { Partner } from "../models/Partner.model.js";
 import { Admin } from "../models/admin.model.js";
-import { getFirstWord } from "../helpers/commonfunction.js";
+import { getFirstWord } from "../utils/commonFuntions.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
