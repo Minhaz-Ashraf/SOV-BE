@@ -268,9 +268,13 @@ const InstitutionSchema = new Schema({
     deleted: {
         type: Boolean,
         default: false
-    }
+    },
+    refferedLocation: {
+        type: String,
+        default: false
+    },
 }, {
-    timestamps: true  // Automatically add createdAt and updatedAt fields
+    timestamps: true
 });
 
 // Model creation

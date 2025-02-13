@@ -107,6 +107,8 @@ const registerOfferLetter = asyncHandler(async (req, res) => {
     studentInformationId: payload.offerLetter.studentInformationId,
     applicationId,
     userId: req.user.id,
+    refferedLocation: req.user?.role === "2" ? req?.user?.companyDetails?.province : req.user?.role === "3" ? payload.refferedLocation : null,
+
   };
 
   // Create a new offer letter, ensuring unwanted fields are not saved
@@ -347,7 +349,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
 
 const registerCourseFeeApplication = asyncHandler(async (req, res) => {
   const { body: payload, user } = req;
-
+  
   // Validate the payload using the Zod schema
   const validation = CourseFeeApplicationSchema.safeParse(
     payload.courseFeeApplication
@@ -386,6 +388,8 @@ const registerCourseFeeApplication = asyncHandler(async (req, res) => {
     studentInformationId: payload.courseFeeApplication.studentInformationId,
     applicationId,
     userId: req.user.id,
+    refferedLocation: req.user?.role === "2" ? req?.user?.companyDetails?.province : req.user?.role === "3" ? payload.refferedLocation : null,
+
   });
 
   // Retrieve the created course fee application excluding the __v field
@@ -1255,6 +1259,7 @@ const getStudentApplicationInfo = asyncHandler(async (req, res) => {
 });
 
 const createInstitutionVisa = asyncHandler(async (req, res) => {
+
   const { body: payload } = req;
 
   const validation = VisaSchema.safeParse(payload);
@@ -1270,7 +1275,6 @@ const createInstitutionVisa = asyncHandler(async (req, res) => {
   if (!studentId) {
     return res.status(404).json(new ApiResponse(404, {}, "Student not found"));
   }
-
   const applicationId = await generateApplicationId();
 
   // Create the new Visa entry under the Institution schema
@@ -1278,6 +1282,7 @@ const createInstitutionVisa = asyncHandler(async (req, res) => {
     studentInformationId: payload.studentInformationId,
     applicationId,
     userId: req.user.id,
+    refferedLocation: req.user?.role === "2" ? req?.user?.companyDetails?.province : req.user?.role === "3" ? payload.refferedLocation : null,
     visa: {
       personalDetails: payload.personalDetails,
       loa: payload.loa,

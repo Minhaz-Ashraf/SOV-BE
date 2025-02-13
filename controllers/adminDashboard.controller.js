@@ -41,6 +41,8 @@ import { Withdrawal } from "../models/withdrawal.model.js";
 import { fileURLToPath } from "url";
 import { restoreDeletedStatus } from "../helpers/restoreDeletedStatus.js";
 import { AirTicketing } from "../models/airTicketingModel.js";
+import { Partner } from "../models/Partner.model.js";
+import { Admin } from "../models/admin.model.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -476,18 +478,40 @@ const getAllApplications = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit + 1)
     .lean();
-
+  // console.log(applications)
   const totalApplications = await Institution.countDocuments(query);
+  const partners = await Admin.find({ role: 4 })
+    .select("firstName lastName residenceAddress.state")
+    .lean();
+  const mappedData = new Map();
+
+  partners.forEach((partner) => {
+    const stateKey = String(partner.residenceAddress?.state || "")
+      .trim()
+      .toLowerCase();
+    const fullName = `${partner.firstName} ${partner.lastName}`;
+
+    if (stateKey) {
+      mappedData.set(stateKey, fullName);
+    }
+  });
 
   const transformedApplications = await Promise.all(
     applications.map(async (app) => {
       const userId = app.userId;
       const userType = app.studentInformationId ? "student" : "agent";
       const studentMongooseId = app.studentInformationId;
+      const referredBy =
+        mappedData.get(
+          String(app.refferedLocation || "")
+            .trim()
+            .toLowerCase()
+        ) || "Direct";
 
       const result = {
         userId,
         userType,
+        referredBy,
         institutionId: app._id,
         applicationId: app.applicationId,
         status: null,
@@ -1344,22 +1368,24 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
         role: "2",
         deleted: false,
       }).distinct("_id");
-      
+
       const studentIds = await StudentInformation.find({
         studentId: { $exists: true },
         "residenceAddress.state": location,
         deleted: false,
       }).distinct("studentId");
-      
+
       const matchedStudents = await StudentInformation.find({
         $or: [
           { studentId: { $in: studentIds } },
           { agentId: { $in: agentIds } },
         ],
       }).lean();
-      
-      const extractedIds = matchedStudents.map(student => 
-        student.agentId ? student.agentId.toString() : student.studentId.toString()
+
+      const extractedIds = matchedStudents.map((student) =>
+        student.agentId
+          ? student.agentId.toString()
+          : student.studentId.toString()
       );
       if (extractedIds.length > 0) {
         baseMatch = {
@@ -1367,8 +1393,6 @@ const getTotalApplicationCount = asyncHandler(async (req, res) => {
           userId: { $in: extractedIds },
         };
       }
-    
-
     }
 
     const totalCount = await Institution.countDocuments({
@@ -1616,7 +1640,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
   let totalStudents = 0;
   let totalPages = 0;
   let totalStudentPages = 0;
-
+  let agentStringIds =[];
   let startOfDay;
   let endOfDay;
 
@@ -1648,12 +1672,11 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
         {
           $and: [
             { studentId: { $exists: true } },
-            { "residenceAddress.state": { $regex: location, $options: "i" } }
+            { "residenceAddress.state": { $regex: location, $options: "i" } },
           ],
         },
         { agentId: { $in: agentStringIds } },
       ];
-      
     }
   }
 
@@ -1735,8 +1758,7 @@ const getAllDataAgentStudent = asyncHandler(async (req, res) => {
       .limit(studentLimit)
       .lean();
 
-
-    console.log(students, studentSearchCondition)
+    // console.log(students, studentSearchCondition);
 
     formattedStudents = students.map((student) => ({
       firstName: student.personalInformation?.firstName || "N/A",
@@ -3016,7 +3038,6 @@ const getTotalApplicationOverviewForAdmin = asyncHandler(async (req, res) => {
         );
     }
 
- 
     let match = {
       ...(type && type !== "all"
         ? { [`${type}.status`]: { $exists: true } }
@@ -3032,38 +3053,39 @@ const getTotalApplicationOverviewForAdmin = asyncHandler(async (req, res) => {
       match.createdAt = { $gte: startDate, $lt: endDate };
     }
 
+    if (role === "4" || role === "5") {
+      const agentIds = await Agent.find({
+        "companyDetails.province": location,
+        role: "2",
+        deleted: false,
+      }).distinct("_id");
 
-      if (role === "4" || role === "5") {
-        const agentIds = await Agent.find({
-          "companyDetails.province": location,
-          role: "2",
-          deleted: false,
-        }).distinct("_id");
-        
-        const studentIds = await StudentInformation.find({
-          studentId: { $exists: true },
-          "residenceAddress.state": location,
-          deleted: false,
-        }).distinct("studentId");
-        
-        const matchedStudents = await StudentInformation.find({
-          $or: [
-            { studentId: { $in: studentIds } },
-            { agentId: { $in: agentIds } },
-          ],
-        }).lean();
-        
-        const extractedIds = matchedStudents.map(student => 
-          student.agentId ? student.agentId.toString() : student.studentId.toString()
-        );
+      const studentIds = await StudentInformation.find({
+        studentId: { $exists: true },
+        "residenceAddress.state": location,
+        deleted: false,
+      }).distinct("studentId");
 
-        if (extractedIds.length > 0) {
-          match = { 
-            ...match, 
-            userId: { $in: extractedIds } 
-          }; // Update baseMatch dynamically
-        }
+      const matchedStudents = await StudentInformation.find({
+        $or: [
+          { studentId: { $in: studentIds } },
+          { agentId: { $in: agentIds } },
+        ],
+      }).lean();
+
+      const extractedIds = matchedStudents.map((student) =>
+        student.agentId
+          ? student.agentId.toString()
+          : student.studentId.toString()
+      );
+
+      if (extractedIds.length > 0) {
+        match = {
+          ...match,
+          userId: { $in: extractedIds },
+        }; // Update baseMatch dynamically
       }
+    }
     const totalApplications = await Institution.countDocuments(match);
 
     const offerLetterCount = await Institution.countDocuments({
@@ -3141,10 +3163,14 @@ const getTotalUsersCount = asyncHandler(async (req, res) => {
     const studentUsers = await StudentInformation.find({
       $or: [
         { $and: [{ agentId: { $in: agentIds } }] },
-        { $and: [{ studentId: { $exists: true, $ne: null } }, { "residenceAddress.state": location }] } 
+        {
+          $and: [
+            { studentId: { $exists: true, $ne: null } },
+            { "residenceAddress.state": location },
+          ],
+        },
       ],
     }).select("_id");
-    
 
     const filteredStudentIds = studentUsers.map((student) => student._id);
 
@@ -3230,37 +3256,37 @@ const getApplicationMonthlyCount = asyncHandler(async (req, res) => {
     }
 
     if (role === "4" || role === "5") {
-    
-        const agentIds = await Agent.find({
-          "companyDetails.province": location,
-          role: "2",
-          deleted: false,
-        }).distinct("_id");
-        
-        const studentIds = await StudentInformation.find({
-          studentId: { $exists: true },
-          "residenceAddress.state": location,
-          deleted: false,
-        }).distinct("studentId");
-        
-        const matchedStudents = await StudentInformation.find({
-          $or: [
-            { studentId: { $in: studentIds } },
-            { agentId: { $in: agentIds } },
-          ],
-        }).lean();
-        
-        const extractedIds = matchedStudents.map(student => 
-          student.agentId ? student.agentId.toString() : student.studentId.toString()
-        );
-        if (extractedIds.length > 0) {
-          matchFilter = { 
-            ...matchFilter, 
-            userId: { $in: extractedIds } 
-          }; 
-        }
+      const agentIds = await Agent.find({
+        "companyDetails.province": location,
+        role: "2",
+        deleted: false,
+      }).distinct("_id");
+
+      const studentIds = await StudentInformation.find({
+        studentId: { $exists: true },
+        "residenceAddress.state": location,
+        deleted: false,
+      }).distinct("studentId");
+
+      const matchedStudents = await StudentInformation.find({
+        $or: [
+          { studentId: { $in: studentIds } },
+          { agentId: { $in: agentIds } },
+        ],
+      }).lean();
+
+      const extractedIds = matchedStudents.map((student) =>
+        student.agentId
+          ? student.agentId.toString()
+          : student.studentId.toString()
+      );
+      if (extractedIds.length > 0) {
+        matchFilter = {
+          ...matchFilter,
+          userId: { $in: extractedIds },
+        };
       }
-    
+    }
 
     const applicationMonthlyCounts = await Institution.aggregate([
       { $match: matchFilter },
