@@ -11,10 +11,6 @@ export const markAllNotificationsAsSeen = async (recieverId, type, country, stat
       // If senderId is undefined, target notifications with no recipient.userId
       query = { "recipient.userId": { $exists: false } };
     }
-    // If country or state are provided, add them to the query
-    if (country) {
-      query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
-    }
 
     if (state) {
       query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match
@@ -191,12 +187,6 @@ export const countUnseenForAdmin = async (country,state, isPartner) => {
     }else{
       query.status = "unseen"
     }
-
-    // If country or state are provided, add them to the query
-    if (country) {
-      query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
-    }
-
     if (state) {
       query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match
     }

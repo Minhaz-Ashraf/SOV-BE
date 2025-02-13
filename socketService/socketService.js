@@ -213,20 +213,20 @@ class SocketService {
           unreadCount = await countUnseenForUser(decryptedDetails._id);
           this.socketServer
           .to(`USER_${decryptedDetails._id}`)
-          .emit("GET_UNREAD_COUNT", unreadCount);
+          .emit("GET_UNREAD_COUNT", {unreadCount});
         }else if(state === "emitForAdmin"){
           unreadCount = await countUnseenForAdmin();
           this.socketServer
           .to(`GLOBAL_NOTIFICATION_ALERT_FOR_ADMINS`)
-          .emit("GET_UNREAD_COUNT", unreadCount);
+          .emit("GET_UNREAD_COUNT", {unreadCount});
         }else {
           unreadCount = await countUnseenForAdmin(decryptedDetails?.country || undefined, decryptedDetails?.state || undefined, "partner");
           this.socketServer
           .to(`GLOBAL_NOTIFICATION_ALERT_FOR_PARTNERS`)
-          .emit("GET_UNREAD_COUNT", unreadCount);
+          .emit("GET_UNREAD_COUNT", {unreadCount, state: decryptedDetails?.state?.toLowerCase()});
         }
-        emitOnMessage(socket, "GET_UNREAD_COUNT", unreadCount);
-        console.log("GET_UNREAD_COUNT : ", unreadCount);
+        emitOnMessage(socket, "GET_UNREAD_COUNT", {unreadCount});
+        console.log("GET_UNREAD_COUNT : ", {unreadCount});
       });
 
       socket.on("NOTIFICATION_SEEN_BY_ADMIN", async () => {
