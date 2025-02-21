@@ -352,7 +352,12 @@ const getAllInstitutes = asyncHandler(async (req, res) => {
   }
 
   if (instituteName) {
-    const regex = new RegExp(instituteName, "i");
+    const sanitizedInstituteName = instituteName
+    .trim()
+    .replace(/\u00A0/g, " ") 
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") 
+    .replace(/\s+/g, "\\s*");
+    const regex = new RegExp(sanitizedInstituteName, "i");
     matchQuery.instituteName = regex;
   }
 

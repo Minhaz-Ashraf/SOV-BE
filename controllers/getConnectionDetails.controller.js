@@ -49,7 +49,7 @@ const getConnectionDetails = asyncHandler(async (req, res) => {
 
 const getConnectionDetailsAdmin = asyncHandler(async (req, res) => {
     const data = req.user;
-  
+   
     if (!data) {
       return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
     }
@@ -58,14 +58,20 @@ const getConnectionDetailsAdmin = asyncHandler(async (req, res) => {
     if (!admin) {
       return res.status(404).json(new ApiResponse(404, {}, "Admin not found"));
     }
+
     let userData = {
       name: `${admin.firstName} ${admin.lastName}`,
       role: admin.role,
       _id: admin._id,
       type: "admin",
-      country: data?.residenceAddress?.country,
-      state: data?.residenceAddress?.state
+      country: data?.residenceAddress?.country?.toLowerCase(),
+      state: data?.residenceAddress?.state?.toLowerCase()
+      
     };
+    if(admin.role === "5"){
+      userData.state = data?.regionData?.toLowerCase()
+    }
+
   
     // Encrypt the selected data
     const encryptedData = encryptData(JSON.stringify(userData));
