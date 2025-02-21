@@ -274,7 +274,7 @@ const InstitutionSchema = new Schema({
         default: false
     },
 }, {
-    timestamps: true
+    timestamps: true  
 });
 
 // Model creation

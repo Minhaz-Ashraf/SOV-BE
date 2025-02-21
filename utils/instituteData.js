@@ -13915,6 +13915,560 @@ const instituteData = [[
   }
 ]]
 
+const CanadaAllData = [ {
+  "instituteName": "Acsenda College",
+  "country": "Canada",
+  "websiteUrl": "https://www.acsenda.com"
+},
+{
+  "instituteName": "Adler University",
+  "country": "Canada",
+  "websiteUrl": "https://www.adler.edu"
+},
+{
+  "instituteName": "Algonquin College",
+  "country": "Canada",
+  "websiteUrl": "https://www.algonquincollege.com"
+},
+{
+  "instituteName": "British Columbia Institute of Technology (BCIT)",
+  "country": "Canada",
+  "websiteUrl": "https://www.bcit.ca"
+},
+{
+  "instituteName": "Brock University",
+  "country": "Canada",
+  "websiteUrl": "https://brocku.ca"
+},
+{
+  "instituteName": "Cambrian College",
+  "country": "Canada",
+  "websiteUrl": "https://cambriancollege.ca"
+},
+{
+  "instituteName": "Cape Breton University (CBU)",
+  "country": "Canada",
+  "websiteUrl": "https://www.cbu.ca"
+},
+{
+  "instituteName": "Capilano University",
+  "country": "Canada",
+  "websiteUrl": "https://capilanou.ca"
+},
+{
+  "instituteName": "College of Rockies",
+  "country": "Canada",
+  "websiteUrl": "https://cotr.bc.ca"
+},
+{
+  "instituteName": "Conestoga College",
+  "country": "Canada",
+  "websiteUrl": "https://www.conestogac.on.ca"
+},
+{
+  "instituteName": "Douglas College",
+  "country": "Canada",
+  "websiteUrl": "https://www.douglascollege.ca"
+},
+{
+  "instituteName": "Durham College",
+  "country": "Canada",
+  "websiteUrl": "https://durhamcollege.ca"
+},
+{
+  "instituteName": "Fanshawe College",
+  "country": "Canada",
+  "websiteUrl": "https://www.fanshawec.ca"
+},
+{
+  "instituteName": "George Brown College",
+  "country": "Canada",
+  "websiteUrl": "https://www.georgebrown.ca"
+},
+{
+  "instituteName": "Humber College",
+  "country": "Canada",
+  "websiteUrl": "https://humber.ca"
+},
+{
+  "instituteName": "Insignia College",
+  "country": "Canada",
+  "websiteUrl": "https://insigniacollege.com"
+},
+{
+  "instituteName": "International College of Manitoba (ICM) to University of Manitoba",
+  "country": "Canada",
+  "websiteUrl": "https://www.icmanitoba.ca"
+},
+{
+  "instituteName": "Kings University College @ University of Western Ontario",
+  "country": "Canada",
+  "websiteUrl": "https://www.kings.uwo.ca"
+},
+{
+  "instituteName": "Kwantlen Polytechnic University",
+  "country": "Canada",
+  "websiteUrl": "https://www.kpu.ca"
+},
+{
+  "instituteName": "The King's University",
+  "country": "Canada",
+  "websiteUrl": "https://www.kingsu.ca"
+},
+{
+  "instituteName": "Lakehead University",
+  "country": "Canada",
+  "websiteUrl": "https://www.lakeheadu.ca"
+},
+{
+  "instituteName": "Loyalist College",
+  "country": "Canada",
+  "websiteUrl": "https://www.loyalistcollege.com"
+},
+{
+  "instituteName": "Mount Allison University",
+  "country": "Canada",
+  "websiteUrl": "https://www.mta.ca"
+},
+{
+  "instituteName": "Northeastern University",
+  "country": "Canada",
+  "websiteUrl": "https://www.northeastern.edu"
+},
+{
+  "instituteName": "NorQuest College",
+  "country": "Canada",
+  "websiteUrl": "https://www.norquest.ca"
+},
+{
+  "instituteName": "Olds College of Agriculture and Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.oldscollege.ca"
+},
+{
+  "instituteName": "Ontario Tech University",
+  "country": "Canada",
+  "websiteUrl": "https://ontariotechu.ca"
+},
+{
+  "instituteName": "Queen's University",
+  "country": "Canada",
+  "websiteUrl": "https://www.queensu.ca"
+},
+{
+  "instituteName": "Toronto Metropolitan University (Formerly; Ryerson University)",
+  "country": "Canada",
+  "websiteUrl": "https://www.torontomu.ca"
+},
+{
+  "instituteName": "Toronto Metropolitan University International College (Formerly, Ryerson University International College) to Toronto Metropolitan University",
+  "country": "Canada",
+  "websiteUrl": "https://www.torontomuic.ca"
+},
+{
+  "instituteName": "Saskatchewan Polytechnic",
+  "country": "Canada",
+  "websiteUrl": "https://saskpolytech.ca"
+},
+{
+  "instituteName": "Seneca College",
+  "country": "Canada",
+  "websiteUrl": "https://www.senecacollege.ca"
+},
+{
+  "instituteName": "Sheridan College",
+  "country": "Canada",
+  "websiteUrl": "https://www.sheridancollege.ca"
+},
+{
+  "instituteName": "Southern Alberta Institute of Technology (SAIT)",
+  "country": "Canada",
+  "websiteUrl": "https://www.sait.ca"
+},
+{
+  "instituteName": "Suncrest College",
+  "country": "Canada",
+  "websiteUrl": "https://www.suncrestcollege.ca"
+},
+{
+  "instituteName": "Sir Wilfrid Laurier School Board",
+  "country": "Canada",
+  "websiteUrl": "https://www.swlauriersb.qc.ca"
+},
+{
+  "instituteName": "St. Lawrence College - Alpha College of Business & Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.alphacollege.ca"
+},
+{
+  "instituteName": "Thompson Rivers University",
+  "country": "Canada",
+  "websiteUrl": "https://www.tru.ca"
+},
+{
+  "instituteName": "Fleming College, Toronto",
+  "country": "Canada",
+  "websiteUrl": "https://flemingcollege.ca"
+},
+{
+  "instituteName": "Trent University",
+  "country": "Canada",
+  "websiteUrl": "https://www.trentu.ca"
+},
+{
+  "instituteName": "University of Alberta",
+  "country": "Canada",
+  "websiteUrl": "https://www.ualberta.ca"
+},
+{
+  "instituteName": "University of Guelph",
+  "country": "Canada",
+  "websiteUrl": "https://www.uoguelph.ca"
+},
+{
+  "instituteName": "University of Lethbridge",
+  "country": "Canada",
+  "websiteUrl": "https://www.uleth.ca"
+},
+{
+  "instituteName": "University of Manitoba",
+  "country": "Canada",
+  "websiteUrl": "https://umanitoba.ca"
+},
+{
+  "instituteName": "University of Niagara Falls",
+  "country": "Canada",
+  "websiteUrl": "https://unfcanada.ca"
+},
+{
+  "instituteName": "University of New Brunswick",
+  "country": "Canada",
+  "websiteUrl": "https://www.unb.ca"
+},
+{
+  "instituteName": "University of Northern British Columbia (UNBC)",
+  "country": "Canada",
+  "websiteUrl": "https://www.unbc.ca"
+},
+{
+  "instituteName": "University of Waterloo",
+  "country": "Canada",
+  "websiteUrl": "https://uwaterloo.ca"
+},
+{
+  "instituteName": "Wilfrid Laurier International College to Wilfrid Laurier University",
+  "country": "Canada",
+  "websiteUrl": "https://laurieric.ca"
+},
+{
+  "instituteName": "Academy of Learning Career College, Scarborough",
+  "country": "Canada",
+  "websiteUrl": "https://www.academyoflearning.com"
+},
+{
+  "instituteName": "Ascent College Of Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.ascentcollege.ca"
+},
+{
+  "instituteName": "Aviron Quebec Technical College",
+  "country": "Canada",
+  "websiteUrl": "https://www.avirontech.com"
+},
+{
+  "instituteName": "Bow Valley College",
+  "country": "Canada",
+  "websiteUrl": "https://bowvalleycollege.ca"
+},
+{
+  "instituteName": "Cambrian @ Hanson",
+  "country": "Canada",
+  "websiteUrl": "https://cambriancollege.ca"
+},
+{
+  "instituteName": "Cape Breton University",
+  "country": "Canada",
+  "websiteUrl": "https://www.cbu.ca"
+},
+{
+  "instituteName": "Cégep de la Gaspésie et des Îles",
+  "country": "Canada",
+  "websiteUrl": "https://cegepgim.ca"
+},
+{
+  "instituteName": "Cégep Marie-Victorin",
+  "country": "Canada",
+  "websiteUrl": "https://www.collegemv.qc.ca"
+},
+{
+  "instituteName": "Columbia College",
+  "country": "Canada",
+  "websiteUrl": "https://www.columbiacollege.ca"
+},
+{
+  "instituteName": "Conestoga College Institute of Technology and Advanced Learning",
+  "country": "Canada",
+  "websiteUrl": "https://www.conestogac.on.ca"
+},
+{
+  "instituteName": "Crandall University",
+  "country": "Canada",
+  "websiteUrl": "https://www.crandallu.ca"
+},
+{
+  "instituteName": "DEA Canadian College",
+  "country": "Canada",
+  "websiteUrl": "https://www.deacollege.ca"
+},
+{
+  "instituteName": "Georgian College of Applied Arts and Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.georgiancollege.ca"
+},
+{
+  "instituteName": "Justice Institute of British Columbia",
+  "country": "Canada",
+  "websiteUrl": "https://www.jibc.ca"
+},
+{
+  "instituteName": "Kwantlen Polytechnic Universit",
+  "country": "Canada",
+  "websiteUrl": "https://www.kpu.ca"
+},
+{
+  "instituteName": "LaSalle College",
+  "country": "Canada",
+  "websiteUrl": "https://www.lasallecollege.com"
+},
+{
+  "instituteName": "Matrix College Of Management Technology And Healthcare",
+  "country": "Canada",
+  "websiteUrl": "https://www.matrixcollege.ca"
+},
+{
+  "instituteName": "Mount Saint Vincent University",
+  "country": "Canada",
+  "websiteUrl": "https://www.msvu.ca"
+},
+{
+  "instituteName": "New York Institute of Technology - Vancouver",
+  "country": "Canada",
+  "websiteUrl": "https://www.nyit.edu/vancouver"
+},
+{
+  "instituteName": "Niagara College",
+  "country": "Canada",
+  "websiteUrl": "https://www.niagaracollege.ca"
+},
+{
+  "instituteName": "Pacific Coast Community College",
+  "country": "Canada",
+  "websiteUrl": "https://www.pacificcoastcommunitycollege.com"
+},
+{
+  "instituteName": "Pacific Link College",
+  "country": "Canada",
+  "websiteUrl": "https://www.plvan.com"
+},
+{
+  "instituteName": "St. Clair College of Applied Arts and Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.stclaircollege.ca"
+},
+{
+  "instituteName": "St. Francis Xavier University",
+  "country": "Canada",
+  "websiteUrl": "https://www.stfx.ca"
+},
+{
+  "instituteName": "St. Lawrence College",
+  "country": "Canada",
+  "websiteUrl": "https://www.stlawrencecollege.ca"
+},
+{
+  "instituteName": "University Canada West",
+  "country": "Canada",
+  "websiteUrl": "https://www.ucanwest.ca"
+},
+{
+  "instituteName": "University of Northern British Columbia",
+  "country": "Canada",
+  "websiteUrl": "https://www.unbc.ca"
+},
+{
+  "instituteName": "University of Prince Edward Island",
+  "country": "Canada",
+  "websiteUrl": "https://www.upei.ca"
+},
+{
+  "instituteName": "University of Regina",
+  "country": "Canada",
+  "websiteUrl": "https://www.uregina.ca"
+},
+{
+  "instituteName": "University of the Fraser Valley",
+  "country": "Canada",
+  "websiteUrl": "https://www.ufv.ca"
+},
+{
+  "instituteName": "Vancouver Film School",
+  "country": "Canada",
+  "websiteUrl": "https://vfs.edu"
+},
+{
+  "instituteName": "University of Niagara Falls Canada",
+  "country": "Canada",
+  "websiteUrl": "https://unfcanada.ca"
+},
+{
+  "instituteName": "University of Victoria",
+  "country": "Canada",
+  "websiteUrl": "https://www.uvic.ca"
+},
+{
+  "instituteName": "Fraser International College",
+  "country": "Canada",
+  "websiteUrl": "https://www.fraseric.ca"
+},
+{
+  "instituteName": "International College of Manitoba",
+  "country": "Canada",
+  "websiteUrl": "https://www.icmanitoba.ca"
+},
+{
+  "instituteName": "Toronto Metropolitan University International College",
+  "country": "Canada",
+  "websiteUrl": "https://www.torontomuic.ca"
+},
+{
+  "instituteName": "ULethbridge International College Calgary",
+  "country": "Canada",
+  "websiteUrl": "https://www.ulethbridge.ca"
+},
+{
+  "instituteName": "Wilfrid Laurier International College",
+  "country": "Canada",
+  "websiteUrl": "https://www.laurieric.ca"
+},
+{
+  "instituteName": "Acadia University",
+  "country": "Canada",
+  "websiteUrl": "https://www2.acadiau.ca"
+},
+{
+  "instituteName": "Great Plains College",
+  "country": "Canada",
+  "websiteUrl": "https://www.greatplainscollege.ca"
+},
+{
+  "instituteName": "Lakeland College",
+  "country": "Canada",
+  "websiteUrl": "https://www.lakelandcollege.ca"
+},
+{
+  "instituteName": "Nipissing University",
+  "country": "Canada",
+  "websiteUrl": "https://www.nipissingu.ca"
+},
+{
+  "instituteName": "North West College",
+  "country": "Canada",
+  "websiteUrl": "https://www.northwestcollege.ca"
+},
+{
+  "instituteName": "Northern Lights College",
+  "country": "Canada",
+  "websiteUrl": "https://www.nlc.bc.ca"
+},
+{
+  "instituteName": "Selkirk College",
+  "country": "Canada",
+  "websiteUrl": "https://selkirk.ca"
+},
+{
+  "instituteName": "St. Thomas University",
+  "country": "Canada",
+  "websiteUrl": "https://www.stu.ca"
+},
+{
+  "instituteName": "Alexander College",
+  "country": "Canada",
+  "websiteUrl": "https://alexandercollege.ca"
+},
+{
+  "instituteName": "Braemar College",
+  "country": "Canada",
+  "websiteUrl": "https://www.braemarcollege.com"
+},
+{
+  "instituteName": "Canadian College",
+  "country": "Canada",
+  "websiteUrl": "https://www.canadiancollege.com"
+},
+{
+  "instituteName": "Coquitlam College",
+  "country": "Canada",
+  "websiteUrl": "https://www.coquitlamcollege.com"
+},
+{
+  "instituteName": "Fleming College Toronto",
+  "country": "Canada",
+  "websiteUrl": "https://flemingcollege.ca"
+},
+{
+  "instituteName": "Loyalist College of Applied Arts and Technology",
+  "country": "Canada",
+  "websiteUrl": "https://www.loyalistcollege.com"
+},
+{
+  "instituteName": "McKenzie College",
+  "country": "Canada",
+  "websiteUrl": "https://mckenzie.edu.au"
+},
+{
+  "instituteName": "Niagara College Toronto",
+  "country": "Canada",
+  "websiteUrl": "https://www.niagaracollegetoronto.ca"
+},
+{
+  "instituteName": "North Island College",
+  "country": "Canada",
+  "websiteUrl": "https://www.nic.bc.ca"
+},
+{
+  "instituteName": "Sheridan College Institute of Technology and Advanced Learning",
+  "country": "Canada",
+  "websiteUrl": "https://www.sheridancollege.ca"
+},
+{
+  "instituteName": "Sprott Shaw College",
+  "country": "Canada",
+  "websiteUrl": "https://sprottshaw.com"
+},
+{
+  "instituteName": "Trebas Institute",
+  "country": "Canada",
+  "websiteUrl": "https://www.trebas.com"
+},
+{
+  "instituteName": "Trinity Western University",
+  "country": "Canada",
+  "websiteUrl": "https://www.twu.ca"
+},
+{
+  "instituteName": "University of Windsor",
+  "country": "Canada",
+  "websiteUrl": "https://www.uwindsor.ca"
+},
+{
+  "instituteName": "Vancouver Community College",
+  "country": "Canada",
+  "websiteUrl": "https://www.vcc.ca"
+},
+{
+  "instituteName": "Vancouver Island University",
+  "country": "Canada",
+  "websiteUrl": "https://www.viu.ca"
+}]
 
-
-export { instituteData, baseData, websiteData};
+export { instituteData, baseData, websiteData, CanadaAllData};

@@ -71,7 +71,7 @@ export const markNotificationAsRead = async (notificationId) => {
 export const getNotificationsForAdmin = async ( page = 1, limit = 10, country, state, adminRole ) => {
   try {
     const skip = (page - 1) * limit;
-    if ((adminRole === "4" || adminRole === "5") && !country && !state) {
+    if ((adminRole === "4" || adminRole === "5") && !state) {
       return { notifications: [], currentPage: page, totalPages: 0, totalNotifications: 0, nextPage: null, prevPage: null, hasNextPage: false, hasPrevPage: false };
     }
 
@@ -81,9 +81,7 @@ export const getNotificationsForAdmin = async ( page = 1, limit = 10, country, s
     };
 
     if (adminRole === "4" || adminRole === "5") {
-      if (country) {
-        query.country = { $regex: new RegExp(`^${country}$`, "i") }; // Case-insensitive country match
-      }
+    
 
       if (state) {
         query.state = { $regex: new RegExp(`^${state}$`, "i") }; // Case-insensitive state match

@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import connectDb from '../db/index.js';
 import { Institute } from '../models/institute.model.js';
 import { baseData, instituteData, websiteData } from './instituteData.js';
-import { updatedData } from './UpdatedInstituteData.js';
+import { canadaInstituteData, updatedData } from './UpdatedInstituteData.js';
+import { deleteStudentData } from '../controllers/studentInformation.controller.js';
 
 async function updateInstitutes() {
   try {
@@ -19,7 +20,6 @@ async function updateInstitutes() {
         keyHighlights,
         admissionAndFacilities,
         inTake,
-        websiteUrl,
       } = institute;
 
       // Ensure `popularCourses` is treated as an array
@@ -72,9 +72,86 @@ async function updateInstitutes() {
 
 
 
+async function updateInstituteCanada() {
+  try {
+    await connectDb(); // Ensure database connection
 
+    const institutes = canadaInstituteData.flat();
 
+    for (const institute of institutes) {
+      const {
+        instituteName,
+        country,
+        popularCourses,
+        aboutCollegeOrInstitute,
+        keyHighlights,
+        admissionAndFacilities,
+        inTake,
+      } = institute;
 
+      // Ensure `popularCourses` is treated as an array
+      const courses = Array.isArray(popularCourses)
+        ? popularCourses
+        : popularCourses.split(",").map((course) => course.trim());
+
+      // Loop through each course and create a separate document
+      for (const courseName of courses) {
+        // Check if a document with the same `instituteName`, `country`, and `popularCourses` exists
+        const existingDocument = await Institute.findOne({
+          instituteName,
+          country,
+          popularCourses: courseName, // Match the exact course
+        });
+
+        if (existingDocument) {
+          // Update existing document if found
+          await Institute.updateOne(
+            { _id: existingDocument._id },
+            {
+              $set: {
+                aboutCollegeOrInstitute,
+                keyHighlights,
+                admissionAndFacilities,
+                inTake: inTake.split("&").map((item) => item.trim()),
+              },
+            }
+          );
+
+          console.log(`Updated existing document for ${instituteName} - Course: ${courseName}`);
+        } else {
+          // Create a new document for each course
+          await Institute.create({
+            instituteName,
+            country,
+            popularCourses: courseName, // Save each course as a separate document
+            aboutCollegeOrInstitute,
+            keyHighlights,
+            admissionAndFacilities,
+            inTake: inTake.split("&").map((item) => item.trim()),
+          });
+
+          console.log(`Created new document for ${instituteName} - Course: ${courseName}`);
+        }
+      }
+    }
+
+    console.log("Institutes updated successfully with individual courses!");
+  } catch (error) {
+    console.error("Error updating institutes:", error);
+  } finally {
+    mongoose.connection.close();
+  }
+}
+
+// updateInstituteCanada()
+
+const deleteData=async()=>{
+  await connectDb();
+    await Institute.deleteMany({ country: "Canada" });
+console.log("All institutes from Canada have been deleted.");
+
+}
+// deleteData()
 async function updateWebsiteInstitutes() {
   try {
     await connectDb();

@@ -232,7 +232,7 @@ const studentResidenceAndAddress = async (req, res) => {
       city: payload.mailingAddress?.city,
       zipcode: payload.mailingAddress?.zipcode,
     },
-    pageCount: 2, // Explicitly set or update pageCount
+    ...(formId ?{}: { pageCount: 2 } ),
   };
 
   try {

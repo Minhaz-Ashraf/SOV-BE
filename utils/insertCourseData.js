@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 import connectDb from "../db/index.js"; // Adjust this path as necessary
 import { Course } from "../models/course.model.js";
-import { newElevenDatas, popularCourses } from './courseData.js';
+import { newElevenDatas, popularCourses, popularUpdateCourse } from './courseData.js';
 import { PopularCourse } from "../models/PopularCourseModel.js";
 
 // Async IIFE to insert new course data into the Course collection
@@ -12,13 +12,13 @@ import { PopularCourse } from "../models/PopularCourseModel.js";
     await connectDb();
 
     // Prepare the course data
-    const courseDocuments = popularCourses.map(courseName => ({
+    const courseDocuments = popularUpdateCourse.map(courseName => ({
       courseName, // Map courseName field to the schema
     }));
 
     // Get a list of existing course names from the database
-    const existingCourses = await PopularCourse.find(
-      { courseName: { $in: popularCourses } },
+    const existingCourses = await Course.find(
+      { courseName: { $in: popularUpdateCourse } },
       { courseName: 1, _id: 0 }
     ).lean();
 
@@ -32,7 +32,7 @@ import { PopularCourse } from "../models/PopularCourseModel.js";
 
     // Insert only the new courses
     if (newCourses.length > 0) {
-      const insertResult = await PopularCourse.insertMany(newCourses);
+      const insertResult = await Course.insertMany(newCourses);
       console.log("Number of courses inserted:", insertResult.length);
     } else {
       console.log("No new courses to insert. All courses already exist.");

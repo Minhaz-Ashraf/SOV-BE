@@ -1326,7 +1326,7 @@ const createInstitutionVisa = asyncHandler(async (req, res) => {
       new ApiResponse(
         201,
         createdInstitutionVisa,
-        "Visa created successfully within Institution model"
+        "Visa created successfully "
       )
     );
 });
