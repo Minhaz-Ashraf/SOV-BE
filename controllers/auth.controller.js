@@ -238,11 +238,14 @@ const login = asyncHandler(async (req, res) => {
   let user;
   let loggedInUser;
    
-  
-
+  if (!payload?.email) {
+    return res
+    .status(400)
+    .json(new ApiResponse(400, {}, "email is required"));
+  }
+  const regex = { $regex: payload?.email?.trim()?.toLowerCase(), $options: "i" };
   if (payload.role === "3") {
-
-    user = await Student.findOne({ email: payload.email.trim().toLowerCase() });
+    user = await Student.findOne({ email: regex });
     
     if (!user) {
       return res.status(404).json(new ApiResponse(404, {}, "User not found"));
@@ -256,7 +259,7 @@ const login = asyncHandler(async (req, res) => {
     loggedInUser = await Student.findById(user._id).select("-password -refreshToken");
 
   } else if (payload.role === "2" || payload.role === '0') {
-    user = await Agent.findOne({ "accountDetails.founderOrCeo.email": payload.email });
+    user = await Agent.findOne({ "accountDetails.founderOrCeo.email": regex });
     
     if (!user) {
       return res.status(404).json(new ApiResponse(404, {}, "User not found"));
