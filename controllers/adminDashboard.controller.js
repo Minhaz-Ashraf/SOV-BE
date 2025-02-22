@@ -2225,7 +2225,7 @@ const getAllStudents = asyncHandler(async (req, res) => {
   const { role, residenceAddress, regionData } = req.user;
   const location =
     role === "4" ? residenceAddress?.state : role === "5" ? regionData : null;
-  let matchFilter = { deleted: false };
+ let matchFilter = { deleted: false};
   if (searchQuery) {
     matchFilter.$or = [
       {
@@ -2248,7 +2248,10 @@ const getAllStudents = asyncHandler(async (req, res) => {
   if (isApproved) {
     matchFilter["pageStatus.status"] = "completed";
   }
-  let aggregationPipeline = [{ $match: matchFilter }];
+  let aggregationPipeline = [{ $match: matchFilter }, 
+    {$sort: { createdAt: -1}},
+
+  ];
   if (role === "4" || role === "5") {
     aggregationPipeline.push(
       {
@@ -2304,7 +2307,6 @@ const getAllStudents = asyncHandler(async (req, res) => {
         agentDetails: 1,
       },
     },
-    { $sort: { createdAt: -1 } }
   );
 
   // Clone the pipeline to count documents properly
@@ -2315,6 +2317,7 @@ const getAllStudents = asyncHandler(async (req, res) => {
       ...aggregationPipeline,
       { $skip: skip },
       { $limit: limit },
+
     ]),
     StudentInformation.aggregate(countPipeline),
   ]);
@@ -2411,10 +2414,12 @@ const getAllAgent = asyncHandler(async (req, res) => {
   const location =
     role === "4" ? residenceAddress?.state : role === "5" ? regionData : null;
 
-  const baseMatch = {
+ const baseMatch = {
     deleted: false,
     ...(isApproved && { "pageStatus.status": "completed" }),
+   
   };
+
 
   let agentFilter = [];
 
@@ -2439,6 +2444,8 @@ const getAllAgent = asyncHandler(async (req, res) => {
 
   const pipeline = [
     { $match: baseMatch },
+    {$sort: { createdAt: -1}},
+
     ...agentFilter,
     {
       $lookup: {
@@ -2480,7 +2487,7 @@ const getAllAgent = asyncHandler(async (req, res) => {
         phone: "$agentData.accountDetails.founderOrCeo.phone",
       },
     },
-    { $sort: { createdAt: -1 } },
+   
     {
       $facet: {
         total: [{ $count: "count" }],
