@@ -2480,7 +2480,6 @@ const getAllAgent = asyncHandler(async (req, res) => {
         phone: "$agentData.accountDetails.founderOrCeo.phone",
       },
     },
-    { $sort: { createdAt: -1 } },
     {
       $facet: {
         total: [{ $count: "count" }],
@@ -2866,6 +2865,7 @@ const getAllStudentApplications = asyncHandler(async (req, res) => {
     {
       $match: filter,
     },
+    { $sort: { createdAt: -1 } },
     {
       $facet: {
         metadata: [{ $count: "totalCount" }],
